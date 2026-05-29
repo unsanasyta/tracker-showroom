@@ -23,7 +23,7 @@ export default function LoginPage() {
             Admin Showroom
           </h1>
           <p className="mt-2 text-sm font-semibold tracking-widest text-slate-300 uppercase">
-            Berlian Motor Dan Amanah Mobilindo
+            Amanah Mobilindo
           </p>
         </div>
       </div>
@@ -125,7 +125,7 @@ export default function LoginPage() {
 
         {/* Footer Area */}
         <div className="mt-8 border-t border-slate-100 pt-6">
-          <p className="text-xs font-bold text-slate-400">© Unsa Nasyta</p>
+          <p className="text-xs font-bold text-slate-400">© Unsa Nasyta, 2026</p>
         </div>
       </div>
     </div>
