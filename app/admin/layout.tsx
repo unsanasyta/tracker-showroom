@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 import {
     LayoutDashboard,
     ReceiptText,
@@ -19,9 +20,23 @@ export default function AdminLayout({
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
+    const router = useRouter();
+    const supabase = createClient();
 
     // State untuk mengatur buka/tutup sidebar
     const [isCollapsed, setIsCollapsed] = useState(false);
+
+    // Fungsi untuk memproses Logout
+    const handleLogout = async () => {
+        const { error } = await supabase.auth.signOut();
+
+        if (error) {
+            alert("Gagal logout: " + error.message);
+        } else {
+            // Arahkan kembali ke halaman login setelah berhasil
+            router.push("/");
+        }
+    };
 
     return (
         <div className="flex h-screen bg-[#F5F6FA] overflow-hidden">
@@ -93,6 +108,7 @@ export default function AdminLayout({
 
                 <div className="p-4 border-t border-[#2D3B58]">
                     <button
+                        onClick={handleLogout}
                         title="Logout"
                         className={`w-full flex items-center py-2.5 rounded-lg hover:bg-[#24324D] text-sm font-medium transition-colors ${isCollapsed ? "justify-center px-0" : "px-3 gap-3"
                             }`}
