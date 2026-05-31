@@ -80,7 +80,7 @@ export default function LoginPage() {
                 disabled={isLoading}
                 className="mt-4 flex w-full items-center justify-center rounded-md bg-primary py-3 text-sm font-semibold text-white shadow-sm hover:bg-secondary focus:outline-none transition-all disabled:opacity-50"
               >
-                {isLoading ? "Memproses..." : "Sign In"}
+                {isLoading ? "Memproses..." : "Masuk"}
               </button>
             </form>
           </div>

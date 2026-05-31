@@ -1,63 +1,36 @@
+// File: app/admin/dashboard/page.tsx
+"use client";
+
+import Link from "next/link";
 import {
-    Wallet,
-    Banknote,
-    TrendingUp,
-    CheckCircle2,
-    Car,
-    Wrench,
-    Plus,
-    FileText,
-    Users,
-    Settings
+    Wallet, Banknote, TrendingUp, CarFront,
+    PlusCircle, ArrowRightLeft, History
 } from "lucide-react";
+import { useDashboardController } from "./useDashboardController";
 
 function StatCard({
     title,
     value,
-    change,
     icon,
     dark = false,
 }: {
     title: string;
     value: string;
-    change: string;
     icon: React.ReactNode;
     dark?: boolean;
 }) {
     return (
-        <div
-            className={`rounded-xl border p-4 ${dark
-                ? "bg-gradient-to-r from-[#1B263B] via-[#0F172A] to-[#1B263B] text-white border-transparent shadow-md"
-                : "bg-white border-[#E5E7EB] shadow-sm"
-                }`}
-        >
+        <div className={`rounded-xl border p-4 ${dark ? "bg-gradient-to-r from-[#1B263B] via-[#0F172A] to-[#1B263B] text-white border-transparent shadow-md" : "bg-white border-[#E5E7EB] shadow-sm"}`}>
             <div className="flex justify-between items-start">
                 <div>
-                    <p
-                        className={`text-[11px] font-semibold tracking-wider uppercase ${dark ? "text-[#D0D9E6]" : "text-gray-500"
-                            }`}
-                    >
+                    <p className={`text-[11px] font-semibold tracking-wider uppercase ${dark ? "text-[#D0D9E6]" : "text-gray-500"}`}>
                         {title}
                     </p>
-
-                    <h3 className="text-2xl font-bold mt-2">
+                    <h3 className="text-2xl font-bold mt-2 truncate max-w-[200px]">
                         {value}
                     </h3>
-
-                    <p
-                        className={`mt-1 text-xs ${dark ? "text-gray-300" : "text-gray-500"
-                            }`}
-                    >
-                        {change}
-                    </p>
                 </div>
-
-                <div
-                    className={`p-2 rounded-lg ${dark
-                        ? "bg-[#415A77]"
-                        : "bg-[#EEF2F7] text-[#415A77]"
-                        }`}
-                >
+                <div className={`p-2 rounded-lg ${dark ? "bg-[#415A77]" : "bg-[#EEF2F7] text-[#415A77]"}`}>
                     {icon}
                 </div>
             </div>
@@ -65,206 +38,179 @@ function StatCard({
     );
 }
 
-const activities = [
-    {
-        icon: <CheckCircle2 size={16} />,
-        title: "Porsche 911 GT3 RS",
-        description: "Invoice #INV-2023-089",
-        time: "2 hours ago",
-        badge: "Sold",
-        badgeClass: "bg-green-100 text-green-700",
-    },
-    {
-        icon: <Car size={16} />,
-        title: "Mercedes-Benz G63 AMG",
-        description: "Added to Inventory",
-        time: "5 hours ago",
-        badge: "New Unit",
-        badgeClass: "bg-blue-100 text-[#415A77]",
-    },
-    {
-        icon: <Wrench size={16} />,
-        title: "Range Rover",
-        description: "Sent to inspection",
-        time: "Yesterday",
-        badge: "Maintenance",
-        badgeClass: "bg-orange-100 text-orange-700",
-    },
-];
-
 export default function DashboardPage() {
-    const chartData = [4.2, 6.6, 5.8, 9, 8.2, 12, 14.5];
+    const { stats, activities, chartData, isLoading } = useDashboardController();
+
+    const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
+    const currentMonthIndex = new Date().getMonth();
+    const maxProfit = Math.max(...chartData, 1);
+
+    // Fungsi Sapaan Waktu
+    const hour = new Date().getHours();
+    let greeting = "Pagi";
+    if (hour >= 11 && hour < 15) greeting = "Siang";
+    else if (hour >= 15 && hour < 19) greeting = "Sore";
+    else if (hour >= 19 || hour < 4) greeting = "Malam";
+
+    // Format Tanggal Hari Ini
+    const today = new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
 
     return (
-        <div className="flex flex-col gap-6">
-
-            {/* Heading */}
-            <div>
-                <h2 className="text-2xl font-bold text-[#1B263B]">
-                    Selamat Datang, Admin!
-                </h2>
-                <p className="text-sm text-gray-500 mt-1">
-                    Berikut adalah overview keuangan untuk bulan ini.
-                </p>
+        <div className="flex flex-col gap-6 pb-10">
+            {/* Heading Dinamis */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 className="text-2xl font-bold text-[#1B263B]">
+                        Selamat {greeting}, Admin!
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Overview ringkasan keuangan showroom Anda.
+                    </p>
+                </div>
+                <div className="bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm text-sm font-semibold text-[#415A77]">
+                    {today}
+                </div>
             </div>
 
-            {/* KPI Cards */}
-            <div className="grid grid-cols-3 gap-4">
+            {/* KPI Cards (Sekarang ada 4 kolom) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <StatCard
+                    title="Stok Tersedia"
+                    value={`${stats.stokMobil} Unit`}
+                    icon={<CarFront size={18} />}
+                />
                 <StatCard
                     title="Total Pemasukan"
-                    value="Rp 12.4B"
-                    change="+8.2% vs last month"
+                    value={`Rp ${stats.pemasukan.toLocaleString('id-ID')}`}
                     icon={<Wallet size={18} />}
                 />
                 <StatCard
                     title="Total Pengeluaran"
-                    value="Rp 8.1B"
-                    change="-2.4% vs last month"
+                    value={`Rp ${stats.pengeluaran.toLocaleString('id-ID')}`}
                     icon={<Banknote size={18} />}
                 />
                 <StatCard
                     dark
-                    title="Keuntungan"
-                    value="Rp 4.3B"
-                    change="+12.5% vs last month"
+                    title="Total Keuntungan"
+                    value={`Rp ${stats.keuntungan.toLocaleString('id-ID')}`}
                     icon={<TrendingUp size={18} />}
                 />
             </div>
 
-            {/* Content (Charts & Activity) */}
-            <div className="grid grid-cols-12 gap-4">
-                {/* Chart */}
-                <div className="col-span-8 bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm flex flex-col">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-bold text-[#1B263B]">
-                            Tren Keuntungan Bulanan
-                        </h3>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                {/* CHART & QUICK ACTIONS */}
+                <div className="lg:col-span-8 flex flex-col gap-4">
 
-                        <button className="px-3 py-1.5 border rounded-lg text-[#415A77] text-xs font-semibold hover:bg-gray-50 transition-colors">
-                            This Year
-                        </button>
-                    </div>
-
-                    <div className="flex-1 min-h-[220px] flex items-end justify-between gap-6 px-2">
-                        {chartData.map((value, index) => (
-                            <div
-                                key={index}
-                                className="flex flex-col items-center flex-1 gap-2 h-full justify-end"
-                            >
-                                <div
-                                    className={`w-full rounded-t-sm transition-all duration-500 ${index === 6
-                                        ? "bg-[#1B263B]"
-                                        : "bg-[#7F93AE] hover:bg-[#62758f]"
-                                        }`}
-                                    style={{
-                                        height: `${(value / 15) * 100}%`,
-                                        minHeight: '20px'
-                                    }}
-                                />
-                                <span className="text-[11px] font-medium text-gray-400 mt-1">
-                                    {
-                                        ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"][index]
-                                    }
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Activity */}
-                <div className="col-span-4 flex flex-col">
-                    <div className="bg-white rounded-xl border border-[#E5E7EB] flex flex-col shadow-sm flex-1">
-                        <div className="flex items-center justify-between p-4 border-b">
+                    {/* CHART */}
+                    <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm flex flex-col flex-1">
+                        <div className="flex items-center justify-between mb-6">
                             <h3 className="text-lg font-bold text-[#1B263B]">
-                                Aktivitas
+                                Tren Keuntungan Bulanan
                             </h3>
-
-                            <button className="text-[#415A77] text-xs font-semibold hover:underline">
-                                View All
+                            <button className="px-3 py-1.5 border rounded-lg text-[#415A77] text-xs font-semibold bg-gray-50 transition-colors">
+                                Tahun Ini
                             </button>
                         </div>
 
-                        <div className="flex-1">
-                            {activities.map((activity, index) => (
-                                <div
-                                    key={index}
-                                    className="flex gap-3 p-4 border-b last:border-b-0 hover:bg-gray-50 transition-colors"
-                                >
-                                    <div className="w-9 h-9 rounded-lg bg-[#F3F5F8] flex items-center justify-center text-[#415A77] shrink-0">
-                                        {activity.icon}
-                                    </div>
-
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-start justify-between gap-2">
-                                            <h4 className="font-semibold text-sm text-[#1B263B] truncate">
-                                                {activity.title}
-                                            </h4>
-
-                                            <span
-                                                className={`px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ${activity.badgeClass}`}
-                                            >
-                                                {activity.badge}
-                                            </span>
+                        <div className="flex-1 min-h-[220px] flex items-end justify-between gap-2 md:gap-4 px-2">
+                            {chartData.map((value, index) => {
+                                const heightPercentage = (value / maxProfit) * 100;
+                                return (
+                                    <div key={index} className="flex flex-col items-center flex-1 gap-2 h-full justify-end group relative">
+                                        <div className="opacity-0 group-hover:opacity-100 absolute -top-8 bg-gray-800 text-white text-[10px] py-1 px-2 rounded transition-opacity whitespace-nowrap z-10 pointer-events-none">
+                                            Rp {value.toLocaleString('id-ID')}
                                         </div>
-
-                                        <p className="text-xs text-gray-500 mt-0.5 truncate">
-                                            {activity.description}
-                                        </p>
-
-                                        <p className="text-[10px] text-gray-400 mt-1">
-                                            {activity.time}
-                                        </p>
+                                        <div
+                                            className={`w-full rounded-t-sm transition-all duration-500 ${index === currentMonthIndex ? "bg-[#1B263B]" : "bg-[#AFC4E2] hover:bg-[#7F93AE]"
+                                                }`}
+                                            style={{ height: `${heightPercentage}%`, minHeight: value > 0 ? '4px' : '2px' }}
+                                        />
+                                        <span className={`text-[10px] font-medium mt-1 ${index === currentMonthIndex ? 'text-[#1B263B] font-bold' : 'text-gray-400'}`}>
+                                            {months[index]}
+                                        </span>
                                     </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* JALAN PINTAS NYATA (Bawah Chart) */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <Link href="/admin/transactions/create" className="bg-gradient-to-r from-blue-50 to-white border border-blue-100 p-4 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-4 group">
+                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                                <PlusCircle size={20} />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-[#1B263B] text-sm">Catat Transaksi Baru</h4>
+                                <p className="text-xs text-gray-500 mt-0.5">Input pembelian / penjualan mobil</p>
+                            </div>
+                        </Link>
+                        <Link href="/admin/transactions" className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 p-4 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-4 group">
+                            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 group-hover:scale-110 transition-transform">
+                                <ArrowRightLeft size={20} />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-[#1B263B] text-sm">Kelola Riwayat Transaksi</h4>
+                                <p className="text-xs text-gray-500 mt-0.5">Lihat tabel dan laporan keuangan</p>
+                            </div>
+                        </Link>
+                    </div>
+                </div>
+
+                {/* ACTIVITY FEED */}
+                <div className="lg:col-span-4 flex flex-col">
+                    <div className="bg-white rounded-xl border border-[#E5E7EB] flex flex-col shadow-sm flex-1">
+                        <div className="flex items-center justify-between p-4 border-b">
+                            <h3 className="text-lg font-bold text-[#1B263B]">Aktivitas Terbaru</h3>
+                        </div>
+
+                        <div className="flex-1 flex flex-col">
+                            {isLoading ? (
+                                <div className="flex-1 flex flex-col items-center justify-center p-8 text-gray-400">
+                                    <div className="w-6 h-6 border-2 border-gray-300 border-t-[#415A77] rounded-full animate-spin mb-3"></div>
+                                    <span className="text-sm font-semibold">Memuat aktivitas...</span>
                                 </div>
-                            ))}
+                            ) : activities.length === 0 ? (
+                                // EMPTY STATE YANG CANTIK
+                                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+                                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 text-gray-300">
+                                        <History size={32} />
+                                    </div>
+                                    <h4 className="font-bold text-[#1B263B] text-sm mb-1">Belum Ada Riwayat</h4>
+                                    <p className="text-xs text-gray-500 mb-4 max-w-[200px]">Data transaksi terbaru akan otomatis muncul di sini.</p>
+                                    <Link href="/admin/transactions/create" className="text-xs font-bold text-white bg-[#415A77] px-4 py-2 rounded-lg hover:bg-[#2D4055] transition-colors">
+                                        Mulai Transaksi
+                                    </Link>
+                                </div>
+                            ) : (
+                                activities.map((activity, index) => (
+                                    <div key={index} className="flex gap-3 p-4 border-b last:border-b-0 hover:bg-gray-50 transition-colors">
+                                        <div className="w-9 h-9 rounded-lg bg-[#F3F5F8] flex items-center justify-center text-[#415A77] shrink-0">
+                                            {activity.icon}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-start justify-between gap-2">
+                                                <h4 className="font-semibold text-sm text-[#1B263B] truncate">
+                                                    {activity.title}
+                                                </h4>
+                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ${activity.badgeClass}`}>
+                                                    {activity.badge}
+                                                </span>
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-0.5 truncate">
+                                                {activity.description}
+                                            </p>
+                                            <p className="text-[10px] text-gray-400 mt-1">
+                                                {activity.time}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
                 </div>
             </div>
-
-            {/* Quick Actions */}
-            <div className="grid grid-cols-4 gap-4">
-                <button className="flex items-center gap-3 p-4 bg-white border border-[#E5E7EB] rounded-xl hover:border-[#415A77] hover:shadow-md transition-all group text-left shadow-sm">
-                    <div className="p-2.5 bg-[#EEF2F7] rounded-lg text-[#415A77] group-hover:bg-[#415A77] group-hover:text-white transition-colors">
-                        <Plus size={18} />
-                    </div>
-                    <div>
-                        <h4 className="font-bold text-sm text-[#1B263B]">Tambah Unit Baru</h4>
-                        <p className="text-xs text-gray-500 mt-0.5">Input kendaraan ke inventory</p>
-                    </div>
-                </button>
-
-                <button className="flex items-center gap-3 p-4 bg-white border border-[#E5E7EB] rounded-xl hover:border-[#415A77] hover:shadow-md transition-all group text-left shadow-sm">
-                    <div className="p-2.5 bg-[#EEF2F7] rounded-lg text-[#415A77] group-hover:bg-[#415A77] group-hover:text-white transition-colors">
-                        <FileText size={18} />
-                    </div>
-                    <div>
-                        <h4 className="font-bold text-sm text-[#1B263B]">Buat Invoice</h4>
-                        <p className="text-xs text-gray-500 mt-0.5">Catat transaksi penjualan</p>
-                    </div>
-                </button>
-
-                <button className="flex items-center gap-3 p-4 bg-white border border-[#E5E7EB] rounded-xl hover:border-[#415A77] hover:shadow-md transition-all group text-left shadow-sm">
-                    <div className="p-2.5 bg-[#EEF2F7] rounded-lg text-[#415A77] group-hover:bg-[#415A77] group-hover:text-white transition-colors">
-                        <Users size={18} />
-                    </div>
-                    <div>
-                        <h4 className="font-bold text-sm text-[#1B263B]">Data Pelanggan</h4>
-                        <p className="text-xs text-gray-500 mt-0.5">Kelola database klien</p>
-                    </div>
-                </button>
-
-                <button className="flex items-center gap-3 p-4 bg-white border border-[#E5E7EB] rounded-xl hover:border-[#415A77] hover:shadow-md transition-all group text-left shadow-sm">
-                    <div className="p-2.5 bg-[#EEF2F7] rounded-lg text-[#415A77] group-hover:bg-[#415A77] group-hover:text-white transition-colors">
-                        <Settings size={18} />
-                    </div>
-                    <div>
-                        <h4 className="font-bold text-sm text-[#1B263B]">Pengaturan</h4>
-                        <p className="text-xs text-gray-500 mt-0.5">Konfigurasi sistem admin</p>
-                    </div>
-                </button>
-            </div>
-
         </div>
     );
 }
