@@ -24,7 +24,8 @@ export const transactionModel = {
     },
 
     async getSalesList() {
-        const { data, error } = await supabase.from('sales').select('*, purchases(car_brand, car_year)').order('created_at', { ascending: false });
+        // PERBAIKAN DI SINI: Tarik juga license_plate dan car_color dari tabel purchases
+        const { data, error } = await supabase.from('sales').select('*, purchases(car_brand, car_year, license_plate, car_color)').order('created_at', { ascending: false });
         if (error) throw error;
         return data || [];
     },

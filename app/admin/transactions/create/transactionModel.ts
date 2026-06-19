@@ -13,6 +13,27 @@ export const transactionModel = {
         return data || [];
     },
 
+    // Tambahkan fungsi upload file
+    async uploadFile(file: File) {
+        // Buat nama file unik agar tidak bentrok
+        const fileExt = file.name.split('.').pop();
+        const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `pembelian/${uniqueName}`;
+
+        const { error: uploadError } = await supabase.storage
+            .from('documents') // Nama bucket kamu
+            .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        // Ambil URL publiknya
+        const { data } = supabase.storage
+            .from('documents')
+            .getPublicUrl(filePath);
+
+        return data.publicUrl;
+    },
+
     async createPurchase(payload: any) {
         const { error } = await supabase.from('purchases').insert([payload]);
         if (error) throw error;
