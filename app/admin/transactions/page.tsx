@@ -83,11 +83,11 @@ export default function TransactionsPage() {
                 </div>
             </div>
 
-            {/* FILTERS (Sorting & Date Range) */}
-            <div className="bg-white p-5 rounded-xl border border-[#E5E7EB] flex flex-col lg:flex-row gap-6 items-start lg:items-end shadow-sm">
+            {/* PERBAIKAN FILTER: Gunakan xl:flex-row agar di laptop standar dia bertumpuk 2 baris dengan rapi */}
+            <div className="bg-white p-4 md:p-5 rounded-xl border border-[#E5E7EB] flex flex-col xl:flex-row gap-4 md:gap-5 items-start xl:items-end shadow-sm">
                 
                 {/* SORTING KIRI */}
-                <div className="w-full lg:flex-1">
+                <div className="w-full xl:flex-1">
                     <label className="block text-xs font-bold text-gray-600 mb-2">Urutkan Mobil</label>
                     <select 
                         value={sortOrder}
@@ -101,38 +101,38 @@ export default function TransactionsPage() {
                 </div>
                 
                 {/* DATE RANGE & TOMBOL KANAN */}
-                <div className="flex flex-col md:flex-row items-start md:items-end gap-4 w-full lg:w-auto">
-                    <div className="w-full md:w-auto">
+                <div className="flex flex-col md:flex-row items-start md:items-end gap-3 w-full xl:w-auto">
+                    <div className="w-full md:w-auto flex-1">
                         <label className="block text-xs font-bold text-gray-600 mb-2">Rentang Tanggal</label>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                             <input 
                                 type="date" 
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
-                                className="w-full md:w-[150px] border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-600 bg-gray-50/50 outline-none focus:border-[#415A77] transition-colors" 
+                                className="w-full md:w-[135px] border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-600 bg-gray-50/50 outline-none focus:border-[#415A77] transition-colors" 
                             />
                             <span className="text-gray-400 font-medium">-</span>
                             <input 
                                 type="date" 
                                 value={endDate}
                                 onChange={(e) => setEndDate(e.target.value)}
-                                className="w-full md:w-[150px] border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-600 bg-gray-50/50 outline-none focus:border-[#415A77] transition-colors" 
+                                className="w-full md:w-[135px] border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-600 bg-gray-50/50 outline-none focus:border-[#415A77] transition-colors" 
                             />
                         </div>
                     </div>
                     
                     {/* Area Tombol Reset & Filter */}
-                    <div className="flex items-center gap-2 w-full md:w-auto">
+                    <div className="flex items-center gap-2 w-full md:w-auto mt-1 md:mt-0">
                         <button 
                             onClick={handleResetFilter}
                             title="Reset Filter"
-                            className="flex items-center justify-center gap-2 bg-gray-50 border border-gray-200 text-gray-600 px-4 py-2.5 rounded-lg text-sm font-bold hover:bg-gray-200 hover:text-gray-800 transition-colors shadow-sm"
+                            className="flex items-center justify-center bg-gray-50 border border-gray-200 text-gray-600 px-3 py-2.5 rounded-lg hover:bg-gray-200 hover:text-gray-800 transition-colors shadow-sm shrink-0"
                         >
-                            <RefreshCw size={16} />
+                            <RefreshCw size={18} />
                         </button>
                         <button 
                             onClick={handleApplyFilter}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 px-6 py-2.5 rounded-lg text-sm font-bold hover:bg-gray-50 transition-colors w-full shadow-sm"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-gray-50 transition-colors shadow-sm shrink-0"
                         >
                             <Filter size={16} /> Filter
                         </button>
@@ -141,7 +141,6 @@ export default function TransactionsPage() {
             </div>
 
             {/* TABLE SECTION */}
-            {/* overflow-hidden di wrapper luar mencegah sudut bulat meleset */}
             <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-sm flex flex-col relative z-0 overflow-hidden">
                 <div className="flex border-b border-gray-200">
                     <button onClick={() => setActiveTab('pembelian')} className={`flex-1 py-4 text-xs sm:text-sm font-bold text-center transition-colors relative ${activeTab === 'pembelian' ? 'text-[#1B263B]' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}>
@@ -154,9 +153,7 @@ export default function TransactionsPage() {
                     </button>
                 </div>
 
-                {/* PERBAIKAN: overflow-x-auto dan w-full agar tabel bisa digeser di HP */}
                 <div className="overflow-x-auto w-full min-h-[300px]">
-                    {/* PERBAIKAN: min-w-[900px] memaksa tabel tetap lebar dan memicu fungsi scroll */}
                     <table className="w-full text-left border-collapse min-w-[900px]">
                         <thead>
                             <tr className="border-b border-gray-200 text-[11px] text-gray-500 uppercase tracking-wider font-bold">
