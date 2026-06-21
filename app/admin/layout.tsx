@@ -13,7 +13,6 @@ import {
     ChevronRight,
     User
 } from "lucide-react";
-// 1. Import Modal Logout
 import ModalLogout from "@/app/components/ModalLogout";
 
 export default function AdminLayout({
@@ -25,26 +24,31 @@ export default function AdminLayout({
     const router = useRouter();
     const supabase = createClient();
 
-    // State Sidebar & Modal
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false); // 2. State untuk modal
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
-    // 3. Fungsi eksekusi logout yang dipanggil OLEH modal
     const executeLogout = async () => {
         const { error } = await supabase.auth.signOut();
-
         if (error) {
             alert("Gagal logout: " + error.message);
         } else {
-            setIsLogoutModalOpen(false); // Tutup modal
+            setIsLogoutModalOpen(false);
             router.push("/");
         }
     };
 
     return (
-        <div className="flex h-screen bg-[#F5F6FA] overflow-hidden">
-            {/* Sidebar */}
-            <aside className={`${isCollapsed ? "w-[80px]" : "w-[240px]"} bg-[#1B263B] text-white flex flex-col shrink-0 transition-all duration-300 relative`}>
+        <div className="flex h-screen bg-[#F5F6FA] overflow-hidden print:block print:h-auto print:overflow-visible print:bg-white">
+            
+            {/* CSS Khusus Print untuk memperkecil margin kertas browser */}
+            <style dangerouslySetInnerHTML={{__html: `
+                @media print {
+                    @page { margin: 1cm; }
+                    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                }
+            `}} />
+
+            <aside className={`${isCollapsed ? "w-[80px]" : "w-[240px]"} bg-[#1B263B] text-white flex flex-col shrink-0 transition-all duration-300 relative print:hidden`}>
                 <button onClick={() => setIsCollapsed(!isCollapsed)} className="absolute -right-3 top-8 bg-[#1B263B] text-white border border-[#2D3B58] rounded-full p-1.5 hover:bg-[#24324D] transition-colors z-10 hidden md:block">
                     {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
                 </button>
@@ -76,7 +80,6 @@ export default function AdminLayout({
                 </nav>
 
                 <div className="p-4 border-t border-[#2D3B58]">
-                    {/* 4. Ubah tombol ini untuk membuka modal, BUKAN langsung logout */}
                     <button onClick={() => setIsLogoutModalOpen(true)} className={`w-full flex items-center py-2.5 rounded-lg hover:bg-[#24324D] text-sm font-medium transition-colors ${isCollapsed ? "justify-center px-0" : "px-3 gap-3"}`}>
                         <LogOut size={18} className="shrink-0" />
                         {!isCollapsed && <span className="whitespace-nowrap">Logout</span>}
@@ -84,9 +87,8 @@ export default function AdminLayout({
                 </div>
             </aside>
 
-            {/* Main Wrapper */}
-            <div className="flex-1 flex flex-col min-w-0 transition-all duration-300">
-                <header className="h-[72px] bg-[#F5F6FA] flex items-center justify-between px-8 border-b border-[#E5E7EB] shrink-0">
+            <div className="flex-1 flex flex-col min-w-0 transition-all duration-300 print:block print:w-full">
+                <header className="h-[72px] bg-[#F5F6FA] flex items-center justify-between px-8 border-b border-[#E5E7EB] shrink-0 print:hidden">
                     <div>
                         <h1 className="text-xl font-bold text-[#1B263B]">
                             {pathname.includes("/transactions") ? "Dashboard Admin" : "Dashboard Admin"}
@@ -101,14 +103,13 @@ export default function AdminLayout({
                     </div>
                 </header>
 
-                <main className="flex-1 overflow-y-auto">
-                    <div className="max-w-[1400px] mx-auto p-8">
+                <main className="flex-1 overflow-y-auto print:block print:overflow-visible print:h-auto">
+                    <div className="max-w-[1400px] mx-auto p-8 print:p-0 print:max-w-none print:w-full">
                         {children}
                     </div>
                 </main>
             </div>
 
-            {/* 5. Taruh Komponen Modal di Paling Bawah */}
             <ModalLogout 
                 isOpen={isLogoutModalOpen} 
                 onClose={() => setIsLogoutModalOpen(false)} 

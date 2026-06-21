@@ -23,9 +23,9 @@ export default function LoginPage() {
         ></div>
         <div className="absolute inset-0 bg-gradient-to-b from-primary/90 to-primary/40"></div>
         <div className="absolute left-12 top-16 z-10">
-          <h1 className="text-4xl font-bold text-white tracking-tight">Admin Showroom</h1>
+          <h1 className="text-4xl font-bold text-white tracking-tight">Amanah Mobilindo</h1>
           <p className="mt-2 text-sm font-semibold tracking-widest text-tertiary uppercase">
-            Berlian Motor Dan Amanah Mobilindo
+            Admin Showroom
           </p>
         </div>
       </div>
