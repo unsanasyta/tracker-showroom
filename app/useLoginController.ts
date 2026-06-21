@@ -20,7 +20,13 @@ export function useLoginController() {
             // Jika berhasil, arahkan ke dashboard
             router.push("/admin/dashboard");
         } catch (err: any) {
-            setError(err.message);
+            // Mencegat pesan error bawaan dari Supabase
+            if (err.message === "Invalid login credentials") {
+                setError("Password / akun anda salah. Silakan coba kembali.");
+            } else {
+                // Tampilkan pesan error lain jika masalahnya berbeda (misal: internet mati)
+                setError(err.message);
+            }
         } finally {
             setIsLoading(false);
         }

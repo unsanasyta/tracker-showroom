@@ -131,26 +131,22 @@ export function useTransactionsController() {
         fetchTransactions();
     }, [activeTab]);
 
-    // Eksekusi ketika tombol Filter diklik
     const handleApplyFilter = () => {
         setAppliedStartDate(startDate);
         setAppliedEndDate(endDate);
     };
 
-    // Eksekusi ketika tombol Reset diklik
     const handleResetFilter = () => {
         setStartDate('');
         setEndDate('');
         setAppliedStartDate('');
         setAppliedEndDate('');
-        setSortOrder('newest'); // Mengembalikan ke urutan default
+        setSortOrder('newest'); 
     };
 
-    // Logika Pengurutan & Filter Tanggal
     const filteredAndSortedTransactions = useMemo(() => {
         let result = [...transactions];
 
-        // 1. Terapkan Filter Tanggal jika ada
         if (appliedStartDate) {
             const start = new Date(appliedStartDate);
             start.setHours(0, 0, 0, 0);
@@ -162,7 +158,6 @@ export function useTransactionsController() {
             result = result.filter(t => new Date(t.rawDate) <= end);
         }
 
-        // 2. Terapkan Pengurutan
         if (sortOrder === 'asc') {
             result.sort((a, b) => a.carBrand.localeCompare(b.carBrand));
         } else if (sortOrder === 'desc') {
@@ -174,7 +169,6 @@ export function useTransactionsController() {
         return result;
     }, [transactions, sortOrder, appliedStartDate, appliedEndDate]);
 
-    // Fungsi Download Laporan (CSV untuk Excel)
     const handleDownloadExcel = () => {
         if (filteredAndSortedTransactions.length === 0) {
             alert("Tidak ada data untuk diunduh pada rentang waktu/filter ini.");
@@ -215,9 +209,8 @@ export function useTransactionsController() {
         document.body.removeChild(link);
     };
 
+    // PERBAIKAN: Fungsi confirm() dan alert() sukses dihapus agar langsung terhubung mulus dengan modal buatanmu
     const handleDelete = async (id: string, type: 'pembelian' | 'penjualan') => {
-        if (!confirm(`Yakin ingin menghapus data ${type} ini? Data akan terhapus permanen.`)) return;
-
         try {
             if (type === 'penjualan') {
                 const saleData = await transactionModel.getSaleById(id);
@@ -229,7 +222,6 @@ export function useTransactionsController() {
             await transactionModel.deleteRecord(type === 'pembelian' ? 'purchases' : 'sales', id);
             setTransactions(transactions.filter(t => t.dbId !== id));
             await fetchStats();
-            alert("Data berhasil dihapus!");
         } catch (error: any) {
             alert("Gagal menghapus data: " + error.message);
         }
@@ -244,7 +236,7 @@ export function useTransactionsController() {
         startDate, setStartDate,
         endDate, setEndDate,
         handleApplyFilter,
-        handleResetFilter, // Export fungsi reset
+        handleResetFilter, 
         handleDownloadExcel
     };
 }
