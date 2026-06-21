@@ -61,20 +61,20 @@ export default function CreateTransactionPage() {
                     <div className="lg:col-span-8">
                         <div className="bg-white p-4 md:p-6 rounded-xl border border-[#E5E7EB] shadow-sm h-full">
                             <h3 className="text-base md:text-lg font-bold text-[#1B263B] mb-4 md:mb-5 border-b pb-3">Identitas Mobil</h3>
-                            {/* Dibuat grid-cols-1 di HP dan md:grid-cols-2 di Layar Besar */}
+                            {/* Diberi Tanda Bintang Merah pada field wajib */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-                                <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Nama Sumber</label><input type="text" name="source_name" value={purchaseForm.source_name} onChange={handlePurchaseChange} placeholder="Nama pemilik..." className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#415A77] bg-gray-50/50" /></div>
+                                <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Nama Sumber <span className="text-red-500">*</span></label><input type="text" name="source_name" value={purchaseForm.source_name} onChange={handlePurchaseChange} placeholder="Nama pemilik..." className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#415A77] bg-gray-50/50" /></div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-600 mb-1.5">Harga Beli</label>
+                                    <label className="block text-xs font-bold text-gray-600 mb-1.5">Harga Beli <span className="text-red-500">*</span></label>
                                     <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden bg-gray-50/50 focus-within:border-[#415A77]">
                                         <span className="px-3 text-sm font-bold text-gray-500 border-r border-gray-200">Rp</span>
                                         <input type="text" name="purchase_price" value={formatCurrency(purchaseForm.purchase_price)} onChange={(e) => handleCurrencyInput(e, handlePurchaseChange)} placeholder="0" className="w-full px-3 py-2.5 text-sm outline-none bg-transparent" />
                                     </div>
                                 </div>
-                                <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Merk Mobil</label><input type="text" name="car_brand" value={purchaseForm.car_brand} onChange={handlePurchaseChange} placeholder="Contoh: Honda Civic" className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#415A77] bg-gray-50/50" /></div>
-                                <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Tahun</label><input type="number" name="car_year" value={purchaseForm.car_year} onChange={handlePurchaseChange} placeholder="Contoh: 2024" className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#415A77] bg-gray-50/50" /></div>
-                                <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Warna</label><input type="text" name="car_color" value={purchaseForm.car_color} onChange={handlePurchaseChange} placeholder="Warna..." className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#415A77] bg-gray-50/50" /></div>
-                                <div><label className="block text-xs font-bold text-gray-600 mb-1.5">No Polisi</label><input type="text" name="license_plate" value={purchaseForm.license_plate} onChange={handlePurchaseChange} placeholder="B 1234 CD..." className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#415A77] bg-gray-50/50 uppercase" /></div>
+                                <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Merk Mobil <span className="text-red-500">*</span></label><input type="text" name="car_brand" value={purchaseForm.car_brand} onChange={handlePurchaseChange} placeholder="Contoh: Honda Civic" className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#415A77] bg-gray-50/50" /></div>
+                                <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Tahun <span className="text-red-500">*</span></label><input type="number" name="car_year" value={purchaseForm.car_year} onChange={handlePurchaseChange} placeholder="Contoh: 2024" className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#415A77] bg-gray-50/50" /></div>
+                                <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Warna <span className="text-red-500">*</span></label><input type="text" name="car_color" value={purchaseForm.car_color} onChange={handlePurchaseChange} placeholder="Warna..." className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#415A77] bg-gray-50/50" /></div>
+                                <div><label className="block text-xs font-bold text-gray-600 mb-1.5">No Polisi <span className="text-red-500">*</span></label><input type="text" name="license_plate" value={purchaseForm.license_plate} onChange={handlePurchaseChange} placeholder="B 1234 CD..." className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#415A77] bg-gray-50/50 uppercase" /></div>
                             </div>
                         </div>
                     </div>
@@ -94,7 +94,6 @@ export default function CreateTransactionPage() {
                     <div className="lg:col-span-8">
                         <div className="bg-white p-4 md:p-6 rounded-xl border border-[#E5E7EB] shadow-sm h-full">
                             <h3 className="text-base md:text-lg font-bold text-[#1B263B] mb-4 md:mb-5 border-b pb-3">Pengeluaran & Service</h3>
-                            {/* Dibuat grid-cols-1 di HP dan md:grid-cols-2 di Layar Besar */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                                 <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Cat</label><div className="flex items-center border border-gray-300 rounded-lg overflow-hidden bg-gray-50/50 focus-within:border-[#415A77]"><span className="px-3 text-sm font-bold text-gray-500 border-r border-gray-200">Rp</span><input type="text" name="paint_cost" value={formatCurrency(purchaseForm.paint_cost)} onChange={(e) => handleCurrencyInput(e, handlePurchaseChange)} placeholder="0" className="w-full px-3 py-2.5 text-sm outline-none bg-transparent" /></div></div>
                                 <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Mesin</label><div className="flex items-center border border-gray-300 rounded-lg overflow-hidden bg-gray-50/50 focus-within:border-[#415A77]"><span className="px-3 text-sm font-bold text-gray-500 border-r border-gray-200">Rp</span><input type="text" name="engine_cost" value={formatCurrency(purchaseForm.engine_cost)} onChange={(e) => handleCurrencyInput(e, handlePurchaseChange)} placeholder="0" className="w-full px-3 py-2.5 text-sm outline-none bg-transparent" /></div></div>
@@ -136,20 +135,19 @@ export default function CreateTransactionPage() {
                         <h3 className="text-base md:text-lg font-bold text-[#1B263B] mb-4 md:mb-5 border-b pb-3">Informasi Penjualan</h3>
                         <div className="flex flex-col gap-4 md:gap-6">
                             <div>
-                                <label className="block text-xs font-bold text-gray-600 mb-1.5">Mobil</label>
+                                <label className="block text-xs font-bold text-gray-600 mb-1.5">Mobil <span className="text-red-500">*</span></label>
                                 <select name="purchase_id" value={saleForm.purchase_id} onChange={handleSaleChange} className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#415A77] bg-gray-50/50 text-gray-600">
                                     <option value="">Cari/Pilih Mobil...</option>
                                     {availableCars.map((car) => (<option key={car.id} value={car.id}>{car.car_brand} ({car.car_year}) - Nopol: {car.license_plate}</option>))}
                                 </select>
                             </div>
-                            {/* Dibuat grid-cols-1 di HP dan md:grid-cols-2 di Layar Besar */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-                                <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Nama Pembeli</label><input type="text" name="buyer_name" value={saleForm.buyer_name} onChange={handleSaleChange} placeholder="Nama pembeli..." className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#415A77] bg-gray-50/50" /></div>
+                                <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Nama Pembeli <span className="text-red-500">*</span></label><input type="text" name="buyer_name" value={saleForm.buyer_name} onChange={handleSaleChange} placeholder="Nama pembeli..." className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#415A77] bg-gray-50/50" /></div>
                                 <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Nama Makelar</label><input type="text" name="broker_name" value={saleForm.broker_name} onChange={handleSaleChange} placeholder="Makelar..." className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#415A77] bg-gray-50/50" /></div>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 pt-2">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-600 mb-1.5">Harga Jual</label>
+                                    <label className="block text-xs font-bold text-gray-600 mb-1.5">Harga Jual <span className="text-red-500">*</span></label>
                                     <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden bg-gray-50/50 focus-within:border-[#415A77]">
                                         <span className="px-3 text-sm font-bold text-gray-500 border-r border-gray-200">Rp</span>
                                         <input type="text" name="sell_price" value={formatCurrency(saleForm.sell_price)} onChange={(e) => handleCurrencyInput(e, handleSaleChange)} placeholder="0" className="w-full px-3 py-2.5 text-sm outline-none bg-transparent" />

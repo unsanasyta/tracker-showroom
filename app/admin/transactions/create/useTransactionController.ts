@@ -1,3 +1,4 @@
+// File: app/admin/transactions/create/useTransactionController.ts
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { transactionModel } from './transactionModel';
@@ -74,6 +75,21 @@ export function useTransactionController() {
 
         try {
             if (transactionType === 'pembelian') {
+                
+                // VALIDASI: Pastikan Identitas Mobil wajib diisi semua
+                if (
+                    !purchaseForm.source_name.trim() || 
+                    !purchaseForm.purchase_price || 
+                    !purchaseForm.car_brand.trim() || 
+                    !purchaseForm.car_year || 
+                    !purchaseForm.car_color.trim() || 
+                    !purchaseForm.license_plate.trim()
+                ) {
+                    alert("Peringatan: Harap isi semua kolom wajib (bertanda bintang merah *) pada bagian Identitas Mobil sebelum menyimpan!");
+                    setIsLoading(false);
+                    return; // Hentikan proses simpan
+                }
+
                 // 1. Upload semua file terlebih dahulu
                 const uploadedUrls: string[] = [];
                 if (selectedFiles.length > 0) {
@@ -104,10 +120,11 @@ export function useTransactionController() {
                 router.push('/admin/transactions');
 
             } else if (transactionType === 'penjualan') {
-                if (!saleForm.purchase_id || !saleForm.buyer_name || !saleForm.sell_price) {
-                    alert("Harap pilih mobil, isi nama pembeli, dan harga jual!");
+                // VALIDASI Penjualan
+                if (!saleForm.purchase_id || !saleForm.buyer_name.trim() || !saleForm.sell_price) {
+                    alert("Peringatan: Harap pilih mobil, isi nama pembeli, dan masukkan harga jual terlebih dahulu!");
                     setIsLoading(false);
-                    return;
+                    return; // Hentikan proses simpan
                 }
 
                 await transactionModel.createSale({
@@ -136,6 +153,6 @@ export function useTransactionController() {
         purchaseForm, handlePurchaseChange, calculateHargaJadi, calculateTotalService,
         saleForm, handleSaleChange, availableCars, calculateNetProfit,
         handleSaveTransaction,
-        selectedFiles, handleFileChange, removeFile // Export fungsi file
+        selectedFiles, handleFileChange, removeFile
     };
 }
