@@ -1,7 +1,8 @@
 // File: app/page.tsx
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { Eye, EyeOff } from "lucide-react"; // Import ikon dari lucide-react
 import { useLoginController } from "./useLoginController";
 
 export default function LoginPage() {
@@ -12,6 +13,9 @@ export default function LoginPage() {
     error, isLoading,
     handleLogin
   } = useLoginController();
+
+  // State untuk mengontrol tampilan password
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className="flex min-h-screen bg-white font-sans">
@@ -35,7 +39,7 @@ export default function LoginPage() {
         <div className="flex h-full flex-col items-center justify-center">
           <div className="w-full max-w-md">
             <div className="mb-10">
-              <h2 className="text-3xl font-bold text-primary">Selamat Datang Kembali</h2>
+              <h2 className="text-3xl font-bold text-primary">Selamat Datang</h2>
               <p className="mt-2 text-sm text-secondary">Silahkan isi untuk mengakses dashboard admin.</p>
             </div>
 
@@ -63,15 +67,25 @@ export default function LoginPage() {
 
               <div>
                 <label className="block text-sm font-semibold text-primary mb-1.5">Password</label>
-                <div className="relative">
+                <div className="relative flex items-center">
                   <input
-                    type="password"
+                    // Tipe input dinamis berdasarkan state showPassword
+                    type={showPassword ? "text" : "password"}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="block w-full rounded-md border border-tertiary py-2.5 px-3 text-sm text-primary placeholder-neutral focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors bg-white"
+                    // Tambahan pr-10 agar teks yang diketik tidak menabrak ikon mata
+                    className="block w-full rounded-md border border-tertiary py-2.5 pl-3 pr-10 text-sm text-primary placeholder-neutral focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors bg-white"
                   />
+                  {/* Tombol Toggle Show/Hide Password */}
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
               </div>
 
