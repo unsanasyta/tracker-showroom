@@ -22,7 +22,7 @@ export default function TransactionsPage() {
         startDate, setStartDate,
         endDate, setEndDate,
         handleApplyFilter,
-        handleResetFilter, // Panggil fungsi reset
+        handleResetFilter,
         handleDownloadExcel
     } = useTransactionsController();
 
@@ -45,14 +45,14 @@ export default function TransactionsPage() {
                     <h2 className="text-2xl font-bold text-[#1B263B]">Transaction Tracker</h2>
                     <p className="text-sm text-gray-500 mt-1">Memantau dan mengelola semua arus masuk dan keluar keuangan.</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                     <button 
                         onClick={handleDownloadExcel}
-                        className="flex items-center gap-2 bg-white border border-[#E5E7EB] text-[#1B263B] px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors shadow-sm"
+                        className="flex-1 sm:flex-none justify-center flex items-center gap-2 bg-white border border-[#E5E7EB] text-[#1B263B] px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors shadow-sm"
                     >
-                        <Download size={16} /> Download Laporan
+                        <Download size={16} /> Download
                     </button>
-                    <Link href="/admin/transactions/create" className="flex items-center gap-2 bg-[#1B263B] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#0F172A] transition-colors shadow-sm">
+                    <Link href="/admin/transactions/create" className="flex-1 sm:flex-none justify-center flex items-center gap-2 bg-[#1B263B] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#0F172A] transition-colors shadow-sm">
                         <Plus size={16} /> Tambah Transaksi
                     </Link>
                 </div>
@@ -84,10 +84,10 @@ export default function TransactionsPage() {
             </div>
 
             {/* FILTERS (Sorting & Date Range) */}
-            <div className="bg-white p-5 rounded-xl border border-[#E5E7EB] flex flex-col md:flex-row gap-6 items-start md:items-end shadow-sm">
+            <div className="bg-white p-5 rounded-xl border border-[#E5E7EB] flex flex-col lg:flex-row gap-6 items-start lg:items-end shadow-sm">
                 
                 {/* SORTING KIRI */}
-                <div className="w-full md:flex-1">
+                <div className="w-full lg:flex-1">
                     <label className="block text-xs font-bold text-gray-600 mb-2">Urutkan Mobil</label>
                     <select 
                         value={sortOrder}
@@ -101,7 +101,7 @@ export default function TransactionsPage() {
                 </div>
                 
                 {/* DATE RANGE & TOMBOL KANAN */}
-                <div className="flex flex-col md:flex-row items-start md:items-end gap-4 w-full md:w-auto">
+                <div className="flex flex-col md:flex-row items-start md:items-end gap-4 w-full lg:w-auto">
                     <div className="w-full md:w-auto">
                         <label className="block text-xs font-bold text-gray-600 mb-2">Rentang Tanggal</label>
                         <div className="flex items-center gap-3">
@@ -109,14 +109,14 @@ export default function TransactionsPage() {
                                 type="date" 
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
-                                className="w-full md:w-[180px] border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-600 bg-gray-50/50 outline-none focus:border-[#415A77] transition-colors" 
+                                className="w-full md:w-[150px] border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-600 bg-gray-50/50 outline-none focus:border-[#415A77] transition-colors" 
                             />
                             <span className="text-gray-400 font-medium">-</span>
                             <input 
                                 type="date" 
                                 value={endDate}
                                 onChange={(e) => setEndDate(e.target.value)}
-                                className="w-full md:w-[180px] border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-600 bg-gray-50/50 outline-none focus:border-[#415A77] transition-colors" 
+                                className="w-full md:w-[150px] border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-600 bg-gray-50/50 outline-none focus:border-[#415A77] transition-colors" 
                             />
                         </div>
                     </div>
@@ -132,7 +132,7 @@ export default function TransactionsPage() {
                         </button>
                         <button 
                             onClick={handleApplyFilter}
-                            className="flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 px-6 py-2.5 rounded-lg text-sm font-bold hover:bg-gray-50 transition-colors w-full md:w-auto shadow-sm"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 px-6 py-2.5 rounded-lg text-sm font-bold hover:bg-gray-50 transition-colors w-full shadow-sm"
                         >
                             <Filter size={16} /> Filter
                         </button>
@@ -141,29 +141,32 @@ export default function TransactionsPage() {
             </div>
 
             {/* TABLE SECTION */}
-            <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-sm flex flex-col relative z-0">
+            {/* overflow-hidden di wrapper luar mencegah sudut bulat meleset */}
+            <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-sm flex flex-col relative z-0 overflow-hidden">
                 <div className="flex border-b border-gray-200">
-                    <button onClick={() => setActiveTab('pembelian')} className={`flex-1 py-4 text-sm font-bold text-center transition-colors relative ${activeTab === 'pembelian' ? 'text-[#1B263B]' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}>
+                    <button onClick={() => setActiveTab('pembelian')} className={`flex-1 py-4 text-xs sm:text-sm font-bold text-center transition-colors relative ${activeTab === 'pembelian' ? 'text-[#1B263B]' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}>
                         Pembelian Mobil
-                        {activeTab === 'pembelian' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-[3px] bg-[#1B263B] rounded-t-full"></div>}
+                        {activeTab === 'pembelian' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 sm:w-48 h-[3px] bg-[#1B263B] rounded-t-full"></div>}
                     </button>
-                    <button onClick={() => setActiveTab('penjualan')} className={`flex-1 py-4 text-sm font-bold text-center transition-colors relative ${activeTab === 'penjualan' ? 'text-[#1B263B]' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}>
+                    <button onClick={() => setActiveTab('penjualan')} className={`flex-1 py-4 text-xs sm:text-sm font-bold text-center transition-colors relative ${activeTab === 'penjualan' ? 'text-[#1B263B]' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}>
                         Penjualan Mobil
-                        {activeTab === 'penjualan' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-[3px] bg-[#1B263B] rounded-t-full"></div>}
+                        {activeTab === 'penjualan' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 sm:w-48 h-[3px] bg-[#1B263B] rounded-t-full"></div>}
                     </button>
                 </div>
 
-                <div className="overflow-x-visible min-h-[300px]">
-                    <table className="w-full text-left border-collapse">
+                {/* PERBAIKAN: overflow-x-auto dan w-full agar tabel bisa digeser di HP */}
+                <div className="overflow-x-auto w-full min-h-[300px]">
+                    {/* PERBAIKAN: min-w-[900px] memaksa tabel tetap lebar dan memicu fungsi scroll */}
+                    <table className="w-full text-left border-collapse min-w-[900px]">
                         <thead>
                             <tr className="border-b border-gray-200 text-[11px] text-gray-500 uppercase tracking-wider font-bold">
-                                <th className="px-6 py-4">Date</th>
-                                <th className="px-6 py-4">ID</th>
-                                <th className="px-6 py-4">Identitas Mobil</th>
-                                <th className="px-6 py-4">No Polisi</th> 
-                                <th className="px-6 py-4">Warna</th> 
-                                <th className="px-6 py-4">Jenis Transaksi</th>
-                                <th className="px-6 py-4 text-left">{activeTab === 'pembelian' ? 'Harga Jadi' : 'Keuntungan'}</th>
+                                <th className="px-6 py-4 whitespace-nowrap">Date</th>
+                                <th className="px-6 py-4 whitespace-nowrap">ID</th>
+                                <th className="px-6 py-4 whitespace-nowrap">Identitas Mobil</th>
+                                <th className="px-6 py-4 whitespace-nowrap">No Polisi</th> 
+                                <th className="px-6 py-4 whitespace-nowrap">Warna</th> 
+                                <th className="px-6 py-4 whitespace-nowrap">Jenis Transaksi</th>
+                                <th className="px-6 py-4 whitespace-nowrap text-left">{activeTab === 'pembelian' ? 'Harga Jadi' : 'Keuntungan'}</th>
                                 <th className="px-6 py-4"></th>
                             </tr>
                         </thead>
@@ -184,8 +187,8 @@ export default function TransactionsPage() {
                                         onClick={() => router.push(`/admin/transactions/detail/${activeTab}/${trx.dbId}`)}
                                     >
                                         <td className="px-6 py-4 text-sm text-[#1B263B] whitespace-nowrap">{trx.date}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">{trx.id}</td>
-                                        <td className="px-6 py-4">
+                                        <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{trx.id}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
                                             <p className="text-sm font-bold text-[#1B263B] group-hover:text-blue-600 transition-colors">{trx.title}</p>
                                             <p className="text-xs text-gray-500 mt-0.5">{trx.client}</p>
                                         </td>
