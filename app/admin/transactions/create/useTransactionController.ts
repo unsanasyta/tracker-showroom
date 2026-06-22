@@ -1,4 +1,3 @@
-// File: app/admin/transactions/create/useTransactionController.ts
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { transactionModel } from './transactionModel';
@@ -8,7 +7,7 @@ export function useTransactionController() {
     const [transactionType, setTransactionType] = useState<'pembelian' | 'penjualan'>('pembelian');
     const [isLoading, setIsLoading] = useState(false);
 
-    // --- STATE FILE UPLOAD (DOKUMEN) ---
+    // --- STATE FILE UPLOAD (DOKUMEN & COVER) ---
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -20,23 +19,6 @@ export function useTransactionController() {
 
     const removeFile = (indexToRemove: number) => {
         setSelectedFiles(prev => prev.filter((_, index) => index !== indexToRemove));
-    };
-
-    // --- STATE FILE UPLOAD (COVER MOBIL) ---
-    const [coverImage, setCoverImage] = useState<File | null>(null);
-    const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
-
-    const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            setCoverImage(file);
-            setCoverImagePreview(URL.createObjectURL(file)); // Buat URL lokal untuk preview
-        }
-    };
-
-    const removeCoverImage = () => {
-        setCoverImage(null);
-        setCoverImagePreview(null);
     };
 
     // --- STATE PEMBELIAN ---
@@ -105,13 +87,7 @@ export function useTransactionController() {
                     return; 
                 }
 
-                // 1. Upload Cover Image (Jika ada)
-                let uploadedCoverUrl = null;
-                if (coverImage) {
-                    uploadedCoverUrl = await transactionModel.uploadCoverImage(coverImage);
-                }
-
-                // 2. Upload semua file dokumen (Jika ada)
+                // 1. Upload semua file (File urutan 0 otomatis jadi cover di UI)
                 const uploadedUrls: string[] = [];
                 if (selectedFiles.length > 0) {
                     for (const file of selectedFiles) {
@@ -120,7 +96,7 @@ export function useTransactionController() {
                     }
                 }
 
-                // 3. Simpan data ke database beserta URL-nya
+                // 2. Simpan data ke database
                 await transactionModel.createPurchase({
                     source_name: purchaseForm.source_name,
                     purchase_price: parseFloat(purchaseForm.purchase_price) || 0,
@@ -135,8 +111,7 @@ export function useTransactionController() {
                     total_service_cost: calculateTotalService(),
                     total_acquisition_cost: calculateHargaJadi(),
                     additional_notes: purchaseForm.additional_notes,
-                    document_urls: uploadedUrls,
-                    cover_image_url: uploadedCoverUrl // Menyimpan URL Cover Mobil
+                    document_urls: uploadedUrls // Semua link masuk ke satu array ini
                 });
                 alert("Data Pembelian berhasil disimpan!");
                 router.push('/admin/transactions');
@@ -174,8 +149,6 @@ export function useTransactionController() {
         purchaseForm, handlePurchaseChange, calculateHargaJadi, calculateTotalService,
         saleForm, handleSaleChange, availableCars, calculateNetProfit,
         handleSaveTransaction,
-        selectedFiles, handleFileChange, removeFile,
-        // Export fungsi & state cover mobil
-        coverImagePreview, handleCoverImageChange, removeCoverImage
+        selectedFiles, handleFileChange, removeFile
     };
 }
