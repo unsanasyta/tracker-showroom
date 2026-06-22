@@ -45,12 +45,11 @@ function GlobalSearchBar() {
     useEffect(() => {
         const delayDebounceFn = setTimeout(async () => {
             const query = searchQuery.trim().toLowerCase();
-            if (query.length >= 2) { // Baru mencari jika sudah ketik minimal 2 huruf
+            if (query.length >= 2) { 
                 setIsSearching(true);
                 setShowDropdown(true);
                 
                 try {
-                    // Tarik data mentah dari database untuk disortir
                     const [purchasesRes, salesRes] = await Promise.all([
                         supabase.from('purchases').select('id, car_brand, car_year, license_plate, source_name').order('created_at', { ascending: false }).limit(200),
                         supabase.from('sales').select('id, buyer_name, purchases(car_brand, car_year, license_plate)').order('created_at', { ascending: false }).limit(200)
@@ -62,7 +61,7 @@ function GlobalSearchBar() {
                     let combined: any[] = [];
 
                     // Filter Pembelian
-                    pData.forEach(p => {
+                    pData.forEach((p: any) => {
                         const searchString = `${p.car_brand} ${p.car_year} ${p.license_plate} ${p.source_name} pur-${p.id}`.toLowerCase();
                         if (searchString.includes(query)) {
                             combined.push({
@@ -76,8 +75,10 @@ function GlobalSearchBar() {
                     });
 
                     // Filter Penjualan
-                    sData.forEach(s => {
-                        const p = s.purchases || {};
+                    sData.forEach((s: any) => {
+                        // PERBAIKAN TypeScript: Ditambahkan ": any" di sini
+                        const p: any = s.purchases || {}; 
+                        
                         const searchString = `${p.car_brand} ${p.car_year} ${p.license_plate} ${s.buyer_name} sal-${s.id}`.toLowerCase();
                         if (searchString.includes(query)) {
                             combined.push({
@@ -90,7 +91,6 @@ function GlobalSearchBar() {
                         }
                     });
 
-                    // Ambil maksimal 8 hasil teratas agar dropdown tidak kepanjangan
                     setResults(combined.slice(0, 8));
 
                 } catch (error) {
@@ -154,6 +154,7 @@ function GlobalSearchBar() {
                             {results.map((res, idx) => (
                                 <button 
                                     key={idx}
+                                    type="button"
                                     onClick={() => handleSelectResult(res.type, res.id)}
                                     className="flex flex-col px-4 py-3 text-left hover:bg-blue-50 transition-colors focus:bg-blue-50 outline-none group"
                                 >
@@ -168,6 +169,7 @@ function GlobalSearchBar() {
                                 </button>
                             ))}
                             <button 
+                                type="button"
                                 onClick={handleSearchSubmit}
                                 className="px-4 py-3 bg-gray-50 text-xs font-bold text-center text-[#415A77] hover:bg-gray-100 transition-colors"
                             >
@@ -286,7 +288,6 @@ export default function AdminLayout({
                     </div>
                     
                     <div className="flex items-center gap-4 md:gap-6">
-                        {/* Search Bar Komponen Baru dipanggil di sini */}
                         <Suspense fallback={<div className="w-[280px] h-9 bg-gray-200 animate-pulse rounded-lg hidden md:block"></div>}>
                             <GlobalSearchBar />
                         </Suspense>
