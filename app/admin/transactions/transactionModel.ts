@@ -22,7 +22,6 @@ export const transactionModel = {
     },
 
     async getSalesList() {
-        // PERBAIKAN: Tarik juga document_urls agar cover terbawa ke daftar penjualan
         const { data, error } = await supabase.from('sales').select('*, purchases(car_brand, car_year, license_plate, car_color, document_urls)').order('created_at', { ascending: false });
         if (error) throw error;
         return data || [];

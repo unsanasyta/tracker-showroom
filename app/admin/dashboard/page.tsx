@@ -70,9 +70,9 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatCard title="Stok Tersedia" value={`${stats.stokMobil} Unit`} icon={<CarFront size={18} />} />
-                <StatCard title="Total Pemasukan" value={`Rp ${stats.pemasukan.toLocaleString('id-ID')}`} icon={<Wallet size={18} />} />
-                <StatCard title="Total Pengeluaran" value={`Rp ${stats.pengeluaran.toLocaleString('id-ID')}`} icon={<Banknote size={18} />} />
-                <StatCard dark title="Total Keuntungan" value={`Rp ${stats.keuntungan.toLocaleString('id-ID')}`} icon={<TrendingUp size={18} />} />
+                <StatCard title="Total Pemasukan (Thn Ini)" value={`Rp ${stats.pemasukan.toLocaleString('id-ID')}`} icon={<Wallet size={18} />} />
+                <StatCard title="Total Pengeluaran (Thn Ini)" value={`Rp ${stats.pengeluaran.toLocaleString('id-ID')}`} icon={<Banknote size={18} />} />
+                <StatCard dark title="Total Keuntungan (Thn Ini)" value={`Rp ${stats.keuntungan.toLocaleString('id-ID')}`} icon={<TrendingUp size={18} />} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -102,7 +102,6 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
-                    {/* Dibuat grid-cols-1 di HP, dan sm:grid-cols-2 di tablet/desktop */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <Link href="/admin/transactions/create" className="bg-gradient-to-r from-blue-50 to-white border border-blue-100 p-4 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-4 group">
                             <div className="w-10 h-10 shrink-0 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform"><PlusCircle size={20} /></div>

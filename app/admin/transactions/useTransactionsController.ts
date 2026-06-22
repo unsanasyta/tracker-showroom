@@ -18,7 +18,8 @@ export interface TransactionUI {
     descColor: string;
     amount: string;
     amountColor: string;
-    coverUrl: string | null; // Tambahan untuk Cover Image
+    coverUrl: string | null;
+    status: 'Tersedia' | 'Terjual'; // BARU: Status Mobil
 }
 
 export function useTransactionsController() {
@@ -30,11 +31,20 @@ export function useTransactionsController() {
     const [isLoading, setIsLoading] = useState(true);
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
     
+    // STATES FILTER
     const [sortOrder, setSortOrder] = useState<'newest' | 'asc' | 'desc'>('newest');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'Tersedia' | 'Terjual'>('all');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    
+    // STATES APPLIED FILTER (diterapkan setelah klik tombol Filter)
+    const [appliedStatusFilter, setAppliedStatusFilter] = useState<'all' | 'Tersedia' | 'Terjual'>('all');
     const [appliedStartDate, setAppliedStartDate] = useState('');
     const [appliedEndDate, setAppliedEndDate] = useState('');
+
+    // STATE PAGINATION (Halaman)
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     const [stats, setStats] = useState({ pemasukan: 0, pengeluaran: 0, keuntungan: 0 });
 
@@ -78,7 +88,8 @@ export function useTransactionsController() {
                         descColor: 'text-red-700',
                         amount: `-Rp ${Number(item.total_acquisition_cost).toLocaleString('id-ID')}`,
                         amountColor: 'text-[#1B263B]',
-                        coverUrl: item.document_urls && item.document_urls.length > 0 ? item.document_urls[0] : null // Ambil gambar index 0
+                        coverUrl: item.document_urls && item.document_urls.length > 0 ? item.document_urls[0] : null,
+                        status: item.is_sold ? 'Terjual' : 'Tersedia' // Logika Status
                     }));
                     setTransactions(formattedData);
                 } else {
@@ -100,7 +111,8 @@ export function useTransactionsController() {
                             descColor: 'text-green-700',
                             amountColor: netProfit >= 0 ? 'text-green-600' : 'text-red-600',
                             amount: netProfit >= 0 ? `+Rp ${netProfit.toLocaleString('id-ID')}` : `-Rp ${Math.abs(netProfit).toLocaleString('id-ID')}`,
-                            coverUrl: item.purchases?.document_urls && item.purchases.document_urls.length > 0 ? item.purchases.document_urls[0] : null
+                            coverUrl: item.purchases?.document_urls && item.purchases.document_urls.length > 0 ? item.purchases.document_urls[0] : null,
+                            status: 'Terjual' // Penjualan otomatis Terjual
                         };
                     });
                     setTransactions(formattedData);
@@ -110,8 +122,25 @@ export function useTransactionsController() {
         fetchTransactions();
     }, [activeTab]);
 
-    const handleApplyFilter = () => { setAppliedStartDate(startDate); setAppliedEndDate(endDate); };
-    const handleResetFilter = () => { setStartDate(''); setEndDate(''); setAppliedStartDate(''); setAppliedEndDate(''); setSortOrder('newest'); };
+    // Reset halaman ke-1 jika tab diubah atau melakukan search global
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeTab, globalSearchQuery]);
+
+    const handleApplyFilter = () => { 
+        setAppliedStartDate(startDate); 
+        setAppliedEndDate(endDate); 
+        setAppliedStatusFilter(statusFilter);
+        setCurrentPage(1); // Kembali ke halaman 1 saat difilter
+    };
+
+    const handleResetFilter = () => { 
+        setStartDate(''); setEndDate(''); 
+        setAppliedStartDate(''); setAppliedEndDate(''); 
+        setSortOrder('newest'); 
+        setStatusFilter('all'); setAppliedStatusFilter('all');
+        setCurrentPage(1);
+    };
 
     const filteredAndSortedTransactions = useMemo(() => {
         let result = [...transactions];
@@ -121,6 +150,12 @@ export function useTransactionsController() {
                 t.color.toLowerCase().includes(globalSearchQuery) || t.client.toLowerCase().includes(globalSearchQuery) || t.id.toLowerCase().includes(globalSearchQuery)
             );
         }
+        
+        // Filter Status
+        if (appliedStatusFilter !== 'all') {
+            result = result.filter(t => t.status === appliedStatusFilter);
+        }
+
         if (appliedStartDate) { const start = new Date(appliedStartDate); start.setHours(0,0,0,0); result = result.filter(t => new Date(t.rawDate) >= start); }
         if (appliedEndDate) { const end = new Date(appliedEndDate); end.setHours(23,59,59,999); result = result.filter(t => new Date(t.rawDate) <= end); }
 
@@ -129,9 +164,16 @@ export function useTransactionsController() {
         else result.sort((a, b) => new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime());
 
         return result;
-    }, [transactions, sortOrder, appliedStartDate, appliedEndDate, globalSearchQuery]);
+    }, [transactions, sortOrder, appliedStartDate, appliedEndDate, appliedStatusFilter, globalSearchQuery]);
 
-    const handleDownloadExcel = () => { /* Logic is unchanged from your previous code */ };
+    // Logika Pemotongan Halaman (Pagination)
+    const totalPages = Math.ceil(filteredAndSortedTransactions.length / itemsPerPage);
+    const paginatedTransactions = filteredAndSortedTransactions.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+    const handleDownloadExcel = () => { /* Logic is unchanged */ };
 
     const handleDelete = async (id: string, type: 'pembelian' | 'penjualan') => {
         try {
@@ -145,5 +187,13 @@ export function useTransactionsController() {
         } catch (error: any) { alert("Gagal menghapus: " + error.message); }
     };
 
-    return { activeTab, setActiveTab, transactions: filteredAndSortedTransactions, isLoading, openDropdown, setOpenDropdown, stats, handleDelete, sortOrder, setSortOrder, startDate, setStartDate, endDate, setEndDate, handleApplyFilter, handleResetFilter, handleDownloadExcel };
+    return { 
+        activeTab, setActiveTab, 
+        transactions: paginatedTransactions, // Return data yang sudah dipotong per halaman
+        totalTransactions: filteredAndSortedTransactions.length,
+        currentPage, setCurrentPage, totalPages, // Export fungsi Pagination
+        isLoading, openDropdown, setOpenDropdown, stats, handleDelete, sortOrder, setSortOrder, 
+        statusFilter, setStatusFilter, // Export status filter
+        startDate, setStartDate, endDate, setEndDate, handleApplyFilter, handleResetFilter, handleDownloadExcel 
+    };
 }

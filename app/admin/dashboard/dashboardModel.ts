@@ -7,8 +7,7 @@ export const dashboardModel = {
     async getAllPurchases() {
         const { data, error } = await supabase
             .from('purchases')
-            // TAMBAHAN: Kita menarik data is_sold untuk menghitung stok
-            .select('id, created_at, car_brand, car_year, total_acquisition_cost, source_name, is_sold')
+            .select('*') // Menarik semua data termasuk field tanggal manual
             .order('created_at', { ascending: false });
         if (error) throw error;
         return data || [];
@@ -17,7 +16,7 @@ export const dashboardModel = {
     async getAllSales() {
         const { data, error } = await supabase
             .from('sales')
-            .select('id, created_at, sell_price, net_profit, buyer_name, purchases(car_brand)')
+            .select('*, purchases(car_brand)') // Menarik semua data dan relasi mobil
             .order('created_at', { ascending: false });
         if (error) throw error;
         return data || [];
