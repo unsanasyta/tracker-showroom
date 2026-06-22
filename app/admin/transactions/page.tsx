@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { TrendingUp, TrendingDown, Wallet, Plus, Filter, MoreVertical, Download, Trash2, Edit2, RefreshCw, CarFront } from 'lucide-react';
 import { useTransactionsController } from './useTransactionsController';
 import ModalHapus from '@/app/components/ModalHapus';
 
-// Fungsi bantuan untuk mengecek apakah file itu gambar atau PDF
 const isImage = (url: string) => /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
 
-export default function TransactionsPage() {
+// 1. Memindahkan isi utama ke komponen anak bernama TransactionsContent
+function TransactionsContent() {
     const router = useRouter();
     const { activeTab, setActiveTab, transactions, isLoading, openDropdown, setOpenDropdown, stats, handleDelete, sortOrder, setSortOrder, startDate, setStartDate, endDate, setEndDate, handleApplyFilter, handleResetFilter, handleDownloadExcel } = useTransactionsController();
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -23,8 +23,7 @@ export default function TransactionsPage() {
     };
 
     return (
-        <div className="flex flex-col gap-6 pb-20">
-            {/* Header & Stat Cards Sama seperti sebelumnya */}
+        <>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-[#1B263B]">Transaction Tracker</h2>
@@ -75,7 +74,6 @@ export default function TransactionsPage() {
                                     <td className="px-6 py-4 text-sm text-[#1B263B] whitespace-nowrap">{trx.date}</td>
                                     <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{trx.id}</td>
                                     
-                                    {/* MUNCULKAN GAMBAR COVER DI SINI */}
                                     <td className="px-6 py-4 whitespace-nowrap flex items-center gap-3">
                                         {trx.coverUrl && isImage(trx.coverUrl) ? (
                                             <img src={trx.coverUrl} alt="cover" className="w-10 h-10 object-cover rounded-lg shrink-0 border border-gray-200" />
@@ -111,6 +109,19 @@ export default function TransactionsPage() {
                 </div>
             </div>
             <ModalHapus isOpen={isDeleteModalOpen} onClose={() => { setIsDeleteModalOpen(false); setTrxToDelete(null); }} onConfirm={confirmDelete} />
+        </>
+    );
+}
+
+// 2. Komponen utama sekarang hanya membungkus dengan Suspense
+export default function TransactionsPage() {
+    return (
+        <div className="flex flex-col gap-6 pb-20">
+            <Suspense fallback={
+                <div className="p-20 text-center font-bold text-gray-500">Memuat halaman transaksi...</div>
+            }>
+                <TransactionsContent />
+            </Suspense>
         </div>
     );
 }
