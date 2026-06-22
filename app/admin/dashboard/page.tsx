@@ -3,7 +3,7 @@
 import Link from "next/link";
 import {
     Wallet, Banknote, TrendingUp, CarFront,
-    PlusCircle, ArrowRightLeft, History
+    PlusCircle, ArrowRightLeft, History, Coins, CheckCircle2 // TAMBAHAN IKON CheckCircle2
 } from "lucide-react";
 import { useDashboardController } from "./useDashboardController";
 
@@ -20,12 +20,12 @@ function StatCard({
 }) {
     return (
         <div className={`rounded-xl border p-4 ${dark ? "bg-gradient-to-r from-[#1B263B] via-[#0F172A] to-[#1B263B] text-white border-transparent shadow-md" : "bg-white border-[#E5E7EB] shadow-sm"}`}>
-            <div className="flex justify-between items-start">
-                <div>
-                    <p className={`text-[11px] font-semibold tracking-wider uppercase ${dark ? "text-[#D0D9E6]" : "text-gray-500"}`}>
+            <div className="flex justify-between items-start gap-4">
+                <div className="min-w-0 flex-1">
+                    <p className={`text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase leading-snug break-words ${dark ? "text-[#D0D9E6]" : "text-gray-500"}`}>
                         {title}
                     </p>
-                    <h3 className="text-xl md:text-2xl font-bold mt-2 truncate max-w-[150px] md:max-w-[200px]">
+                    <h3 className="text-xl md:text-2xl font-bold mt-1.5 truncate w-full">
                         {value}
                     </h3>
                 </div>
@@ -68,11 +68,17 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* KARTU STATISTIK MENJADI 6 BUAH (3 KOLOM x 2 BARIS) AGAR SEMPURNA */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Baris 1: Berkaitan dengan Unit / Modal */}
                 <StatCard title="Stok Tersedia" value={`${stats.stokMobil} Unit`} icon={<CarFront size={18} />} />
-                <StatCard title="Total Pemasukan (Thn Ini)" value={`Rp ${stats.pemasukan.toLocaleString('id-ID')}`} icon={<Wallet size={18} />} />
-                <StatCard title="Total Pengeluaran (Thn Ini)" value={`Rp ${stats.pengeluaran.toLocaleString('id-ID')}`} icon={<Banknote size={18} />} />
-                <StatCard dark title="Total Keuntungan (Thn Ini)" value={`Rp ${stats.keuntungan.toLocaleString('id-ID')}`} icon={<TrendingUp size={18} />} />
+                <StatCard title="Total Modal Stok" value={`Rp${stats.modalMengendap.toLocaleString('id-ID')}`} icon={<Coins size={18} className="text-orange-500" />} />
+                <StatCard title="Mobil Terjual (Thn Ini)" value={`${stats.mobilTerjual} Unit`} icon={<CheckCircle2 size={18} className="text-green-600" />} />
+                
+                {/* Baris 2: Berkaitan dengan Arus Kas / Profit */}
+                <StatCard title="Total Pemasukan (Thn Ini)" value={`Rp${stats.pemasukan.toLocaleString('id-ID')}`} icon={<Wallet size={18} />} />
+                <StatCard title="Total Pengeluaran (Thn Ini)" value={`Rp${stats.pengeluaran.toLocaleString('id-ID')}`} icon={<Banknote size={18} />} />
+                <StatCard dark title="Total Keuntungan (Thn Ini)" value={`Rp${stats.keuntungan.toLocaleString('id-ID')}`} icon={<TrendingUp size={18} />} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -90,7 +96,7 @@ export default function DashboardPage() {
                                 return (
                                     <div key={index} className="flex flex-col items-center flex-1 gap-2 h-full justify-end group relative">
                                         <div className="opacity-0 group-hover:opacity-100 absolute -top-8 bg-gray-800 text-white text-[10px] py-1 px-2 rounded transition-opacity whitespace-nowrap z-10 pointer-events-none">
-                                            Rp {value.toLocaleString('id-ID')}
+                                            Rp{value.toLocaleString('id-ID')}
                                         </div>
                                         <div className={`w-full rounded-t-sm transition-all duration-500 ${index === currentMonthIndex ? "bg-[#1B263B]" : "bg-[#AFC4E2] hover:bg-[#7F93AE]"}`} style={{ height: `${heightPercentage}%`, minHeight: value > 0 ? '4px' : '2px' }} />
                                         <span className={`text-[9px] md:text-[10px] font-medium mt-1 ${index === currentMonthIndex ? 'text-[#1B263B] font-bold' : 'text-gray-400'}`}>

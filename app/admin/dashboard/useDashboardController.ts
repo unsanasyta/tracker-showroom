@@ -9,7 +9,9 @@ export function useDashboardController() {
         pemasukan: 0,
         pengeluaran: 0,
         keuntungan: 0,
-        stokMobil: 0
+        stokMobil: 0,
+        modalMengendap: 0,
+        mobilTerjual: 0 // STATE BARU: Untuk menyimpan jumlah unit terjual
     });
     const [activities, setActivities] = useState<any[]>([]);
     const [chartData, setChartData] = useState<number[]>(new Array(12).fill(0));
@@ -24,30 +26,29 @@ export function useDashboardController() {
 
                 const currentYear = new Date().getFullYear();
 
-                // FUNGSI CERDAS: Mengambil tanggal dari field manual (jika ada), fallback ke created_at
                 const getPurchaseDate = (p: any) => new Date(p.tanggal_pembelian || p.tanggal || p.created_at);
                 const getSaleDate = (s: any) => new Date(s.tanggal_penjualan || s.tanggal || s.created_at);
 
-                // FILTER DATA KHUSUS TAHUN INI BERDASARKAN TANGGAL TRANSAKSI
                 const purchasesThisYear = purchases.filter((p: any) => getPurchaseDate(p).getFullYear() === currentYear);
                 const salesThisYear = sales.filter((s: any) => getSaleDate(s).getFullYear() === currentYear);
 
-                // Hitung Statistik Utama (Tahun Ini Saja)
                 const totalPengeluaran = purchasesThisYear.reduce((sum, item) => sum + Number(item.total_acquisition_cost), 0);
                 const totalPemasukan = salesThisYear.reduce((sum, item) => sum + Number(item.sell_price), 0);
                 const totalKeuntungan = salesThisYear.reduce((sum, item) => sum + Number(item.net_profit), 0);
 
-                // Stok tetap dihitung dari keseluruhan (tidak dibatasi tahun)
-                const sisaStok = purchases.filter((p: any) => p.is_sold === false).length;
+                const unsoldPurchases = purchases.filter((p: any) => p.is_sold === false);
+                const sisaStok = unsoldPurchases.length;
+                const totalModalMengendap = unsoldPurchases.reduce((sum, item) => sum + Number(item.total_acquisition_cost), 0);
 
                 setStats({
                     pemasukan: totalPemasukan,
                     pengeluaran: totalPengeluaran,
                     keuntungan: totalKeuntungan,
-                    stokMobil: sisaStok
+                    stokMobil: sisaStok,
+                    modalMengendap: totalModalMengendap,
+                    mobilTerjual: salesThisYear.length // Memasukkan total unit terjual tahun ini
                 });
 
-                // Grafik Keuntungan Bulanan (Berdasarkan Tanggal Penjualan)
                 const monthlyProfits = new Array(12).fill(0);
                 salesThisYear.forEach((s: any) => {
                     const monthIndex = getSaleDate(s).getMonth();
@@ -55,7 +56,6 @@ export function useDashboardController() {
                 });
                 setChartData(monthlyProfits);
 
-                // Format Aktivitas Terbaru
                 const formattedPurchases = purchases.map((p: any) => ({
                     id: p.id,
                     date: getPurchaseDate(p),

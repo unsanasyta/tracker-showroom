@@ -3,11 +3,24 @@
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { TrendingUp, TrendingDown, Wallet, Plus, Filter, MoreVertical, Download, Trash2, Edit2, RefreshCw, CarFront, ChevronLeft, ChevronRight } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, Plus, Filter, MoreVertical, Download, Trash2, Edit2, RefreshCw, CarFront, ChevronLeft, ChevronRight, Coins } from 'lucide-react';
 import { useTransactionsController } from './useTransactionsController';
 import ModalHapus from '@/app/components/ModalHapus';
 
 const isImage = (url: string) => /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+
+// Komponen kecil agar tampilan kartu konsisten
+function StatCard({ title, value, icon, dark = false }: { title: string, value: string, icon: React.ReactNode, dark?: boolean }) {
+    return (
+        <div className={`rounded-xl border p-4 shadow-sm flex items-start flex-col gap-1 ${dark ? "bg-gradient-to-r from-[#1B263B] via-[#0F172A] to-[#1B263B] border-transparent text-white" : "bg-white border-[#E5E7EB]"}`}>
+            <p className={`text-[11px] font-semibold tracking-wider uppercase ${dark ? "text-[#D0D9E6]" : "text-gray-500"}`}>{title}</p>
+            <div className="flex items-center gap-3 mt-1">
+                <div className={`p-2 rounded-lg ${dark ? "bg-[#415A77] text-white" : "bg-[#EEF2F7] text-[#415A77]"}`}>{icon}</div>
+                <h3 className="text-xl lg:text-2xl font-bold truncate max-w-[150px] lg:max-w-none">{value}</h3>
+            </div>
+        </div>
+    );
+}
 
 function TransactionsContent() {
     const router = useRouter();
@@ -27,6 +40,10 @@ function TransactionsContent() {
         setTrxToDelete(null);
     };
 
+    // Fungsi bantuan untuk memastikan kita memiliki data modalMengendap (Jika ditambahkan di controller nanti)
+    // Untuk saat ini kita buat dummy fallback 0 jika dari stat belum ditarik
+    const modalMengendap = (stats as any).modalMengendap || 0; 
+
     return (
         <>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -40,10 +57,29 @@ function TransactionsContent() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white p-4 rounded-xl border border-[#E5E7EB] shadow-sm flex items-start flex-col gap-1"><p className="text-[11px] font-semibold tracking-wider uppercase text-gray-500">TOTAL PEMASUKAN</p><div className="flex items-center gap-3 mt-1"><div className="p-2 bg-[#EEF2F7] text-green-600 rounded-lg"><TrendingUp size={18} /></div><h3 className="text-2xl font-bold text-[#1B263B]">Rp{stats.pemasukan.toLocaleString('id-ID')}</h3></div></div>
-                <div className="bg-white p-4 rounded-xl border border-[#E5E7EB] shadow-sm flex items-start flex-col gap-1"><p className="text-[11px] font-semibold tracking-wider uppercase text-gray-500">TOTAL PENGELUARAN</p><div className="flex items-center gap-3 mt-1"><div className="p-2 bg-[#EEF2F7] text-red-600 rounded-lg"><TrendingDown size={18} /></div><h3 className="text-2xl font-bold text-[#1B263B]">Rp{stats.pengeluaran.toLocaleString('id-ID')}</h3></div></div>
-                <div className="bg-gradient-to-r from-[#1B263B] via-[#0F172A] to-[#1B263B] p-4 rounded-xl border border-transparent shadow-md flex items-start flex-col gap-1 text-white"><p className="text-[11px] font-semibold tracking-wider uppercase text-[#D0D9E6]">KEUNTUNGAN</p><div className="flex items-center gap-3 mt-1"><div className="p-2 bg-[#415A77] text-white rounded-lg"><Wallet size={18} /></div><h3 className="text-2xl font-bold">Rp{stats.keuntungan.toLocaleString('id-ID')}</h3></div></div>
+            {/* GRID STATS DIPERBARUI MENJADI 4 KOLOM */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <StatCard 
+                    title="Total Modal Stok" 
+                    value={`Rp${modalMengendap.toLocaleString('id-ID')}`} 
+                    icon={<Coins size={18} className="text-orange-500" />} 
+                />
+                <StatCard 
+                    title="Total Pemasukan" 
+                    value={`Rp${stats.pemasukan.toLocaleString('id-ID')}`} 
+                    icon={<TrendingUp size={18} className="text-green-600" />} 
+                />
+                <StatCard 
+                    title="Total Pengeluaran" 
+                    value={`Rp${stats.pengeluaran.toLocaleString('id-ID')}`} 
+                    icon={<TrendingDown size={18} className="text-red-600" />} 
+                />
+                <StatCard 
+                    dark 
+                    title="Keuntungan Bersih" 
+                    value={`Rp${stats.keuntungan.toLocaleString('id-ID')}`} 
+                    icon={<Wallet size={18} />} 
+                />
             </div>
 
             <div className="bg-white p-4 md:p-5 rounded-xl border border-[#E5E7EB] flex flex-col xl:flex-row gap-4 md:gap-5 items-start xl:items-end shadow-sm">
@@ -75,7 +111,7 @@ function TransactionsContent() {
                         </thead>
                         <tbody className="divide-y divide-gray-100 relative">
                             {isLoading ? <tr><td colSpan={8} className="px-6 py-10 text-center text-gray-500 text-sm font-semibold">Memuat data transaksi...</td></tr> : 
-                             transactions.length === 0 ? <tr><td colSpan={8} className="px-6 py-10 text-center text-gray-500 text-sm font-semibold">Belum ada transaksi.</td></tr> : 
+                             transactions.length === 0 ? <tr><td colSpan={8} className="px-6 py-10 text-center text-gray-500 text-sm font-semibold">Belum ada transaksi pada filter ini.</td></tr> : 
                              transactions.map((trx) => (
                                 <tr key={trx.dbId} className="hover:bg-gray-50 transition-colors cursor-pointer group" onClick={() => router.push(`/admin/transactions/detail/${activeTab}/${trx.dbId}`)}>
                                     <td className="px-6 py-4 text-sm text-[#1B263B] whitespace-nowrap">{trx.date}</td>

@@ -4,7 +4,8 @@ const supabase = createClient();
 
 export const transactionModel = {
     async getPurchasesForStats() {
-        const { data, error } = await supabase.from('purchases').select('total_acquisition_cost');
+        // PERBAIKAN: Tarik juga is_sold untuk menghitung modal mengendap
+        const { data, error } = await supabase.from('purchases').select('total_acquisition_cost, is_sold');
         if (error) throw error;
         return data || [];
     },

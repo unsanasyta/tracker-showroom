@@ -19,7 +19,7 @@ export interface TransactionUI {
     amount: string;
     amountColor: string;
     coverUrl: string | null;
-    status: 'Tersedia' | 'Terjual'; // BARU: Status Mobil
+    status: 'Tersedia' | 'Terjual';
 }
 
 export function useTransactionsController() {
@@ -31,22 +31,20 @@ export function useTransactionsController() {
     const [isLoading, setIsLoading] = useState(true);
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
     
-    // STATES FILTER
     const [sortOrder, setSortOrder] = useState<'newest' | 'asc' | 'desc'>('newest');
     const [statusFilter, setStatusFilter] = useState<'all' | 'Tersedia' | 'Terjual'>('all');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     
-    // STATES APPLIED FILTER (diterapkan setelah klik tombol Filter)
     const [appliedStatusFilter, setAppliedStatusFilter] = useState<'all' | 'Tersedia' | 'Terjual'>('all');
     const [appliedStartDate, setAppliedStartDate] = useState('');
     const [appliedEndDate, setAppliedEndDate] = useState('');
 
-    // STATE PAGINATION (Halaman)
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
-    const [stats, setStats] = useState({ pemasukan: 0, pengeluaran: 0, keuntungan: 0 });
+    // STATE DIPERBARUI DENGAN MODAL MENGENDAP
+    const [stats, setStats] = useState({ pemasukan: 0, pengeluaran: 0, keuntungan: 0, modalMengendap: 0 });
 
     const formatDate = (isoString: string) => {
         const date = new Date(isoString);
@@ -57,10 +55,16 @@ export function useTransactionsController() {
         try {
             const purchases = await transactionModel.getPurchasesForStats();
             const sales = await transactionModel.getSalesForStats();
+            
+            // Perhitungan Modal Stok (Mobil yang is_sold === false)
+            const unsoldPurchases = purchases.filter((p: any) => p.is_sold === false);
+            const totalModal = unsoldPurchases.reduce((sum, item) => sum + Number(item.total_acquisition_cost), 0);
+
             setStats({
                 pemasukan: sales.reduce((sum, item) => sum + Number(item.sell_price), 0),
                 pengeluaran: purchases.reduce((sum, item) => sum + Number(item.total_acquisition_cost), 0),
-                keuntungan: sales.reduce((sum, item) => sum + Number(item.net_profit), 0)
+                keuntungan: sales.reduce((sum, item) => sum + Number(item.net_profit), 0),
+                modalMengendap: totalModal
             });
         } catch (error) { console.error(error); }
     };
@@ -89,7 +93,7 @@ export function useTransactionsController() {
                         amount: `-Rp ${Number(item.total_acquisition_cost).toLocaleString('id-ID')}`,
                         amountColor: 'text-[#1B263B]',
                         coverUrl: item.document_urls && item.document_urls.length > 0 ? item.document_urls[0] : null,
-                        status: item.is_sold ? 'Terjual' : 'Tersedia' // Logika Status
+                        status: item.is_sold ? 'Terjual' : 'Tersedia'
                     }));
                     setTransactions(formattedData);
                 } else {
@@ -112,7 +116,7 @@ export function useTransactionsController() {
                             amountColor: netProfit >= 0 ? 'text-green-600' : 'text-red-600',
                             amount: netProfit >= 0 ? `+Rp ${netProfit.toLocaleString('id-ID')}` : `-Rp ${Math.abs(netProfit).toLocaleString('id-ID')}`,
                             coverUrl: item.purchases?.document_urls && item.purchases.document_urls.length > 0 ? item.purchases.document_urls[0] : null,
-                            status: 'Terjual' // Penjualan otomatis Terjual
+                            status: 'Terjual'
                         };
                     });
                     setTransactions(formattedData);
@@ -122,7 +126,6 @@ export function useTransactionsController() {
         fetchTransactions();
     }, [activeTab]);
 
-    // Reset halaman ke-1 jika tab diubah atau melakukan search global
     useEffect(() => {
         setCurrentPage(1);
     }, [activeTab, globalSearchQuery]);
@@ -131,7 +134,7 @@ export function useTransactionsController() {
         setAppliedStartDate(startDate); 
         setAppliedEndDate(endDate); 
         setAppliedStatusFilter(statusFilter);
-        setCurrentPage(1); // Kembali ke halaman 1 saat difilter
+        setCurrentPage(1); 
     };
 
     const handleResetFilter = () => { 
@@ -151,7 +154,6 @@ export function useTransactionsController() {
             );
         }
         
-        // Filter Status
         if (appliedStatusFilter !== 'all') {
             result = result.filter(t => t.status === appliedStatusFilter);
         }
@@ -166,7 +168,6 @@ export function useTransactionsController() {
         return result;
     }, [transactions, sortOrder, appliedStartDate, appliedEndDate, appliedStatusFilter, globalSearchQuery]);
 
-    // Logika Pemotongan Halaman (Pagination)
     const totalPages = Math.ceil(filteredAndSortedTransactions.length / itemsPerPage);
     const paginatedTransactions = filteredAndSortedTransactions.slice(
         (currentPage - 1) * itemsPerPage,
@@ -189,11 +190,11 @@ export function useTransactionsController() {
 
     return { 
         activeTab, setActiveTab, 
-        transactions: paginatedTransactions, // Return data yang sudah dipotong per halaman
+        transactions: paginatedTransactions,
         totalTransactions: filteredAndSortedTransactions.length,
-        currentPage, setCurrentPage, totalPages, // Export fungsi Pagination
+        currentPage, setCurrentPage, totalPages, 
         isLoading, openDropdown, setOpenDropdown, stats, handleDelete, sortOrder, setSortOrder, 
-        statusFilter, setStatusFilter, // Export status filter
+        statusFilter, setStatusFilter, 
         startDate, setStartDate, endDate, setEndDate, handleApplyFilter, handleResetFilter, handleDownloadExcel 
     };
 }
