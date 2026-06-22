@@ -1,3 +1,4 @@
+// File: app/admin/transactions/create/transactionModel.ts
 import { createClient } from '@/utils/supabase/client';
 
 const supabase = createClient();
@@ -13,20 +14,37 @@ export const transactionModel = {
         return data || [];
     },
 
-    // Tambahkan fungsi upload file
+    // Fungsi upload file PDF/Dokumen
     async uploadFile(file: File) {
-        // Buat nama file unik agar tidak bentrok
         const fileExt = file.name.split('.').pop();
         const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
         const filePath = `pembelian/${uniqueName}`;
 
         const { error: uploadError } = await supabase.storage
-            .from('documents') // Nama bucket kamu
+            .from('documents')
             .upload(filePath, file);
 
         if (uploadError) throw uploadError;
 
-        // Ambil URL publiknya
+        const { data } = supabase.storage
+            .from('documents')
+            .getPublicUrl(filePath);
+
+        return data.publicUrl;
+    },
+
+    // FUNGSI BARU: Khusus upload cover gambar mobil
+    async uploadCoverImage(file: File) {
+        const fileExt = file.name.split('.').pop();
+        const uniqueName = `cover-${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `covers/${uniqueName}`;
+
+        const { error: uploadError } = await supabase.storage
+            .from('documents') // Tetap pakai bucket documents, tapi folder covers
+            .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
         const { data } = supabase.storage
             .from('documents')
             .getPublicUrl(filePath);

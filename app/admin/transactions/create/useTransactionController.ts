@@ -8,12 +8,11 @@ export function useTransactionController() {
     const [transactionType, setTransactionType] = useState<'pembelian' | 'penjualan'>('pembelian');
     const [isLoading, setIsLoading] = useState(false);
 
-    // --- STATE FILE UPLOAD ---
+    // --- STATE FILE UPLOAD (DOKUMEN) ---
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
-            // Gabungkan file yang baru dipilih dengan file yang sudah ada
             const newFiles = Array.from(e.target.files);
             setSelectedFiles(prev => [...prev, ...newFiles]);
         }
@@ -21,6 +20,23 @@ export function useTransactionController() {
 
     const removeFile = (indexToRemove: number) => {
         setSelectedFiles(prev => prev.filter((_, index) => index !== indexToRemove));
+    };
+
+    // --- STATE FILE UPLOAD (COVER MOBIL) ---
+    const [coverImage, setCoverImage] = useState<File | null>(null);
+    const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
+
+    const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setCoverImage(file);
+            setCoverImagePreview(URL.createObjectURL(file)); // Buat URL lokal untuk preview
+        }
+    };
+
+    const removeCoverImage = () => {
+        setCoverImage(null);
+        setCoverImagePreview(null);
     };
 
     // --- STATE PEMBELIAN ---
@@ -75,7 +91,6 @@ export function useTransactionController() {
 
         try {
             if (transactionType === 'pembelian') {
-                
                 // VALIDASI: Pastikan Identitas Mobil wajib diisi semua
                 if (
                     !purchaseForm.source_name.trim() || 
@@ -87,10 +102,16 @@ export function useTransactionController() {
                 ) {
                     alert("Peringatan: Harap isi semua kolom wajib (bertanda bintang merah *) pada bagian Identitas Mobil sebelum menyimpan!");
                     setIsLoading(false);
-                    return; // Hentikan proses simpan
+                    return; 
                 }
 
-                // 1. Upload semua file terlebih dahulu
+                // 1. Upload Cover Image (Jika ada)
+                let uploadedCoverUrl = null;
+                if (coverImage) {
+                    uploadedCoverUrl = await transactionModel.uploadCoverImage(coverImage);
+                }
+
+                // 2. Upload semua file dokumen (Jika ada)
                 const uploadedUrls: string[] = [];
                 if (selectedFiles.length > 0) {
                     for (const file of selectedFiles) {
@@ -99,7 +120,7 @@ export function useTransactionController() {
                     }
                 }
 
-                // 2. Simpan data ke database beserta URL-nya
+                // 3. Simpan data ke database beserta URL-nya
                 await transactionModel.createPurchase({
                     source_name: purchaseForm.source_name,
                     purchase_price: parseFloat(purchaseForm.purchase_price) || 0,
@@ -114,17 +135,17 @@ export function useTransactionController() {
                     total_service_cost: calculateTotalService(),
                     total_acquisition_cost: calculateHargaJadi(),
                     additional_notes: purchaseForm.additional_notes,
-                    document_urls: uploadedUrls // Simpan array URL ke kolom baru
+                    document_urls: uploadedUrls,
+                    cover_image_url: uploadedCoverUrl // Menyimpan URL Cover Mobil
                 });
                 alert("Data Pembelian berhasil disimpan!");
                 router.push('/admin/transactions');
 
             } else if (transactionType === 'penjualan') {
-                // VALIDASI Penjualan
                 if (!saleForm.purchase_id || !saleForm.buyer_name.trim() || !saleForm.sell_price) {
                     alert("Peringatan: Harap pilih mobil, isi nama pembeli, dan masukkan harga jual terlebih dahulu!");
                     setIsLoading(false);
-                    return; // Hentikan proses simpan
+                    return; 
                 }
 
                 await transactionModel.createSale({
@@ -153,6 +174,8 @@ export function useTransactionController() {
         purchaseForm, handlePurchaseChange, calculateHargaJadi, calculateTotalService,
         saleForm, handleSaleChange, availableCars, calculateNetProfit,
         handleSaveTransaction,
-        selectedFiles, handleFileChange, removeFile
+        selectedFiles, handleFileChange, removeFile,
+        // Export fungsi & state cover mobil
+        coverImagePreview, handleCoverImageChange, removeCoverImage
     };
 }

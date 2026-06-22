@@ -10,7 +10,7 @@ export default function RootLayout({
   return (
     <html lang="id">
       <head>
-        <title>Financial Trackers – Amanah Mobilindo</title>
+        <title>Amanah Mobilindo - Financial Trackers</title>
 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
 
