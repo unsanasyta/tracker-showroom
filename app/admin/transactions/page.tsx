@@ -56,7 +56,7 @@ function TransactionsContent() {
                     <table className="w-full text-left border-collapse min-w-[900px]">
                         <thead>
                             <tr className="border-b border-gray-200 text-[11px] text-gray-500 uppercase tracking-wider font-bold">
-                                <th className="px-6 py-4 whitespace-nowrap">Date</th>
+                                <th className="px-6 py-4 whitespace-nowrap">Tanggal</th>
                                 <th className="px-6 py-4 whitespace-nowrap">ID</th>
                                 <th className="px-6 py-4 whitespace-nowrap">Identitas Mobil</th>
                                 <th className="px-6 py-4 whitespace-nowrap">No Polisi</th> 

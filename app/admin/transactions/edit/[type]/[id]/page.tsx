@@ -1,12 +1,38 @@
+// File: app/admin/transactions/edit/[type]/[id]/page.tsx
 "use client";
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronRight, CheckCircle2, UploadCloud, X, ExternalLink } from 'lucide-react';
 import { useTransactionController } from './useTransactionController'; 
 
 export default function EditTransactionPage() {
     const { transactionType, isFetching, isLoading, purchaseForm, handlePurchaseChange, calculateHargaJadi, calculateTotalService, saleForm, handleSaleChange, availableCars, calculateNetProfit, handleUpdateTransaction, existingFiles, newFiles, handleFileChange, removeExistingFile, removeNewFile } = useTransactionController();
+
+    // --- STATE UNTUK SEARCHABLE DROPDOWN MOBIL ---
+    const [carSearch, setCarSearch] = useState("");
+    const [isCarDropdownOpen, setIsCarDropdownOpen] = useState(false);
+    const carDropdownRef = useRef<HTMLDivElement>(null);
+
+    // Initial setup untuk teks pencarian dropdown mobil
+    useEffect(() => {
+        if (!isFetching && transactionType === 'penjualan' && saleForm.purchase_id && availableCars.length > 0 && !carSearch) {
+            const selectedCar = availableCars.find(c => c.id === saleForm.purchase_id);
+            if (selectedCar) setCarSearch(`${selectedCar.car_brand} (${selectedCar.car_year}) - Nopol: ${selectedCar.license_plate}`);
+        }
+    }, [isFetching, transactionType, saleForm.purchase_id, availableCars]);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (carDropdownRef.current && !carDropdownRef.current.contains(event.target as Node)) { setIsCarDropdownOpen(false); }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const filteredCars = availableCars.filter(car =>
+        `${car.car_brand} ${car.car_year} ${car.license_plate}`.toLowerCase().includes(carSearch.toLowerCase())
+    );
 
     if (isFetching) return <div className="p-10 text-center font-bold text-gray-500">Memuat data untuk diedit...</div>;
 
@@ -22,6 +48,8 @@ export default function EditTransactionPage() {
             {transactionType === 'pembelian' ? (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     <div className="lg:col-span-8"><div className="bg-white p-4 md:p-6 rounded-xl border border-[#E5E7EB] shadow-sm h-full"><h3 className="text-base md:text-lg font-bold text-[#1B263B] mb-4 md:mb-5 border-b pb-3">Identitas Mobil</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+                        {/* INPUT TANGGAL */}
+                        <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Tanggal Pembelian</label><input type="date" name="created_at" value={purchaseForm.created_at} onChange={handlePurchaseChange} className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#415A77] bg-gray-50/50" /></div>
                         <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Nama Sumber</label><input type="text" name="source_name" value={purchaseForm.source_name} onChange={handlePurchaseChange} className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#415A77] bg-gray-50/50" /></div>
                         <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Harga Beli</label><div className="flex items-center border border-gray-300 rounded-lg overflow-hidden bg-gray-50/50 focus-within:border-[#415A77]"><span className="px-3 text-sm font-bold text-gray-500 border-r border-gray-200">Rp</span><input type="number" name="purchase_price" value={purchaseForm.purchase_price} onChange={handlePurchaseChange} className="w-full px-3 py-2.5 text-sm outline-none bg-transparent" /></div></div>
                         <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Merk Mobil</label><input type="text" name="car_brand" value={purchaseForm.car_brand} onChange={handlePurchaseChange} className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#415A77] bg-gray-50/50" /></div>
@@ -40,7 +68,6 @@ export default function EditTransactionPage() {
                         <div className="col-span-1 md:col-span-2 pt-2 md:pt-4 border-t border-gray-100"><label className="block text-xs font-bold text-[#1B263B] mb-1.5">Total Pengeluaran Service</label><div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-100"><span className="px-3 text-sm font-bold text-gray-500 border-r border-gray-200">Rp</span><input type="text" disabled value={calculateTotalService().toLocaleString("id-ID")} className="w-full px-3 py-2.5 text-sm font-bold text-gray-600 outline-none bg-transparent cursor-not-allowed" /></div></div>
                     </div></div></div>
 
-                    {/* PERBAIKAN: TEKS EDUKASI COVER DI HALAMAN EDIT */}
                     <div className="lg:col-span-4"><div className="bg-white p-4 md:p-6 rounded-xl border border-[#E5E7EB] shadow-sm flex flex-col h-full"><h3 className="text-base md:text-lg font-bold text-[#1B263B] mb-4 border-b pb-3">Galeri & Dokumen</h3>
                         <div className="flex flex-col mb-4">
                             <label className="block text-xs font-bold text-gray-600 mb-2">Unggah Foto / Dokumen <br/><span className="text-[10px] text-blue-500 font-normal mt-1 block">💡 Gambar yang paling atas di daftar "Tersimpan" akan menjadi Cover Utama.</span></label>
@@ -89,7 +116,48 @@ export default function EditTransactionPage() {
                 </div>
             ) : (
                 <div className="flex flex-col gap-6 w-full"><div className="bg-white p-4 md:p-6 rounded-xl border border-[#E5E7EB] shadow-sm w-full"><h3 className="text-base md:text-lg font-bold text-[#1B263B] mb-4 md:mb-5 border-b pb-3">Informasi Penjualan</h3><div className="flex flex-col gap-4 md:gap-6">
-                    <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Mobil</label><select name="purchase_id" value={saleForm.purchase_id} onChange={handleSaleChange} className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm bg-gray-50/50 text-gray-600 outline-none focus:border-[#415A77]"><option value="">Pilih Mobil...</option>{availableCars.map((car) => (<option key={car.id} value={car.id}>{car.car_brand} ({car.car_year})</option>))}</select></div>
+                    {/* INPUT TANGGAL PENJUALAN */}
+                    <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Tanggal Penjualan</label><input type="date" name="created_at" value={saleForm.created_at} onChange={handleSaleChange} className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm bg-gray-50/50 outline-none focus:border-[#415A77]" /></div>
+                    
+                    <div className="relative" ref={carDropdownRef}>
+                        <label className="block text-xs font-bold text-gray-600 mb-1.5">Mobil</label>
+                        <input
+                            type="text"
+                            value={carSearch}
+                            onChange={(e) => {
+                                setCarSearch(e.target.value);
+                                setIsCarDropdownOpen(true);
+                                if (saleForm.purchase_id) handleSaleChange({ target: { name: 'purchase_id', value: '' } } as any);
+                            }}
+                            onFocus={() => setIsCarDropdownOpen(true)}
+                            placeholder="Ketik plat, merk, atau tahun mobil..."
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#415A77] bg-gray-50/50 text-[#1B263B]"
+                        />
+                        <input type="text" required value={saleForm.purchase_id} onChange={()=>{}} className="opacity-0 absolute h-0 w-0 pointer-events-none" tabIndex={-1} />
+                        {isCarDropdownOpen && (
+                            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 shadow-xl rounded-lg max-h-60 overflow-y-auto">
+                                {filteredCars.length > 0 ? (
+                                    filteredCars.map(car => (
+                                        <div
+                                            key={car.id}
+                                            onClick={() => {
+                                                handleSaleChange({ target: { name: 'purchase_id', value: car.id } } as any);
+                                                setCarSearch(`${car.car_brand} (${car.car_year}) - Nopol: ${car.license_plate}`);
+                                                setIsCarDropdownOpen(false);
+                                            }}
+                                            className="px-4 py-2.5 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-0"
+                                        >
+                                            <div className="font-bold text-[#1B263B]">{car.car_brand} ({car.car_year})</div>
+                                            <div className="text-[11px] text-gray-500 mt-0.5 uppercase">Nopol: {car.license_plate}</div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="px-4 py-3 text-sm text-gray-500 text-center italic">Mobil tidak ditemukan.</div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5"><div><label className="block text-xs font-bold text-gray-600 mb-1.5">Nama Pembeli</label><input type="text" name="buyer_name" value={saleForm.buyer_name} onChange={handleSaleChange} className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm bg-gray-50/50 outline-none focus:border-[#415A77]" /></div><div><label className="block text-xs font-bold text-gray-600 mb-1.5">Nama Makelar</label><input type="text" name="broker_name" value={saleForm.broker_name} onChange={handleSaleChange} className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm bg-gray-50/50 outline-none focus:border-[#415A77]" /></div></div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 pt-2"><div><label className="block text-xs font-bold text-gray-600 mb-1.5">Harga Jual</label><div className="flex items-center border border-gray-300 rounded-lg overflow-hidden bg-gray-50/50 focus-within:border-[#415A77]"><span className="px-3 text-sm font-bold text-gray-500 border-r border-gray-200">Rp</span><input type="number" name="sell_price" value={saleForm.sell_price} onChange={handleSaleChange} className="w-full px-3 py-2.5 text-sm outline-none bg-transparent" /></div></div><div><label className="block text-xs font-bold text-gray-600 mb-1.5">Keuntungan Bersih</label><div className="flex items-center border border-blue-200 rounded-lg overflow-hidden bg-[#EEF4FF]"><span className="px-3 text-sm font-bold text-[#1B263B] border-r border-blue-200">Rp</span><input type="text" disabled value={calculateNetProfit().toLocaleString("id-ID")} className="w-full px-3 py-2.5 text-sm font-bold text-[#1B263B] outline-none bg-transparent cursor-not-allowed" /></div></div></div>
                     <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Catatan Penjualan</label><textarea name="sale_notes" value={saleForm.sale_notes} onChange={handleSaleChange} rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm bg-gray-50/50 resize-none outline-none focus:border-[#415A77]"></textarea></div>

@@ -1,3 +1,4 @@
+// File: app/admin/transactions/edit/[type]/[id]/transactionModel.ts
 import { createClient } from '@/utils/supabase/client';
 
 const supabase = createClient();
@@ -24,7 +25,6 @@ export const transactionModel = {
         const { data } = supabase.storage.from('documents').getPublicUrl(filePath);
         return data.publicUrl;
     },
-    // PERBAIKAN: Fungsi khusus membuang file dari penyimpanan
     async deleteFile(url: string) {
         const fileName = url.split('/').pop();
         if (!fileName) return;

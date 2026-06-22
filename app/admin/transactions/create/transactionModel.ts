@@ -13,7 +13,6 @@ export const transactionModel = {
         return data || [];
     },
 
-    // Fungsi upload file (Gambar & Dokumen)
     async uploadFile(file: File) {
         const fileExt = file.name.split('.').pop();
         const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
@@ -33,11 +32,13 @@ export const transactionModel = {
     },
 
     async createPurchase(payload: any) {
+        // payload sudah berisi properti 'created_at' dari useTransactionController
         const { error } = await supabase.from('purchases').insert([payload]);
         if (error) throw error;
     },
 
     async createSale(payload: any) {
+         // payload sudah berisi properti 'created_at' dari useTransactionController
         const { error } = await supabase.from('sales').insert([payload]);
         if (error) throw error;
     },

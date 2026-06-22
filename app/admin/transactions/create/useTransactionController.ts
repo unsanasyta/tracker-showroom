@@ -7,7 +7,6 @@ export function useTransactionController() {
     const [transactionType, setTransactionType] = useState<'pembelian' | 'penjualan'>('pembelian');
     const [isLoading, setIsLoading] = useState(false);
 
-    // --- STATE FILE UPLOAD (DOKUMEN & COVER) ---
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,8 +20,9 @@ export function useTransactionController() {
         setSelectedFiles(prev => prev.filter((_, index) => index !== indexToRemove));
     };
 
-    // --- STATE PEMBELIAN ---
+    // --- STATE PEMBELIAN (Ditambah created_at) ---
     const [purchaseForm, setPurchaseForm] = useState({
+        created_at: new Date().toISOString().split('T')[0], // Default hari ini
         source_name: '', purchase_price: '', car_brand: '', car_year: '', car_color: '',
         license_plate: '', paint_cost: '', engine_cost: '', parts_cost: '', tax_cost: '', additional_notes: ''
     });
@@ -35,9 +35,10 @@ export function useTransactionController() {
     const calculateTotalService = () => (parseFloat(purchaseForm.paint_cost) || 0) + (parseFloat(purchaseForm.engine_cost) || 0) + (parseFloat(purchaseForm.parts_cost) || 0);
     const calculateHargaJadi = () => (parseFloat(purchaseForm.purchase_price) || 0) + (parseFloat(purchaseForm.tax_cost) || 0) + calculateTotalService();
 
-    // --- STATE PENJUALAN ---
+    // --- STATE PENJUALAN (Ditambah created_at) ---
     const [availableCars, setAvailableCars] = useState<any[]>([]);
     const [saleForm, setSaleForm] = useState({
+        created_at: new Date().toISOString().split('T')[0], // Default hari ini
         purchase_id: '', buyer_name: '', broker_name: '', sell_price: '', sale_notes: ''
     });
 
@@ -67,14 +68,13 @@ export function useTransactionController() {
         return (parseFloat(saleForm.sell_price) || 0) - Number(selectedCar.total_acquisition_cost);
     };
 
-    // --- FUNGSI SAVE TRANSAKSI ---
     const handleSaveTransaction = async () => {
         setIsLoading(true);
 
         try {
             if (transactionType === 'pembelian') {
-                // VALIDASI: Pastikan Identitas Mobil wajib diisi semua
                 if (
+                    !purchaseForm.created_at ||
                     !purchaseForm.source_name.trim() || 
                     !purchaseForm.purchase_price || 
                     !purchaseForm.car_brand.trim() || 
@@ -87,7 +87,6 @@ export function useTransactionController() {
                     return; 
                 }
 
-                // 1. Upload semua file (File urutan 0 otomatis jadi cover di UI)
                 const uploadedUrls: string[] = [];
                 if (selectedFiles.length > 0) {
                     for (const file of selectedFiles) {
@@ -96,8 +95,9 @@ export function useTransactionController() {
                     }
                 }
 
-                // 2. Simpan data ke database
                 await transactionModel.createPurchase({
+                    // Sertakan waktu (jam/menit) saat ini agar sorting di database tidak bentrok
+                    created_at: `${purchaseForm.created_at}T${new Date().toISOString().split('T')[1]}`,
                     source_name: purchaseForm.source_name,
                     purchase_price: parseFloat(purchaseForm.purchase_price) || 0,
                     car_brand: purchaseForm.car_brand,
@@ -111,19 +111,20 @@ export function useTransactionController() {
                     total_service_cost: calculateTotalService(),
                     total_acquisition_cost: calculateHargaJadi(),
                     additional_notes: purchaseForm.additional_notes,
-                    document_urls: uploadedUrls // Semua link masuk ke satu array ini
+                    document_urls: uploadedUrls 
                 });
                 alert("Data Pembelian berhasil disimpan!");
                 router.push('/admin/transactions');
 
             } else if (transactionType === 'penjualan') {
-                if (!saleForm.purchase_id || !saleForm.buyer_name.trim() || !saleForm.sell_price) {
-                    alert("Peringatan: Harap pilih mobil, isi nama pembeli, dan masukkan harga jual terlebih dahulu!");
+                if (!saleForm.created_at || !saleForm.purchase_id || !saleForm.buyer_name.trim() || !saleForm.sell_price) {
+                    alert("Peringatan: Harap isi tanggal, pilih mobil, nama pembeli, dan harga jual terlebih dahulu!");
                     setIsLoading(false);
                     return; 
                 }
 
                 await transactionModel.createSale({
+                    created_at: `${saleForm.created_at}T${new Date().toISOString().split('T')[1]}`,
                     purchase_id: saleForm.purchase_id,
                     buyer_name: saleForm.buyer_name,
                     broker_name: saleForm.broker_name,
