@@ -21,6 +21,7 @@ import ModalLogout from "@/app/components/ModalLogout";
 // --- KOMPONEN LIVE SEARCH BAR ---
 function GlobalSearchBar() {
     const router = useRouter();
+    const pathname = usePathname(); // Ditambahkan untuk mendeteksi posisi halaman saat ini
     const searchParams = useSearchParams();
     const supabase = createClient();
     
@@ -29,6 +30,11 @@ function GlobalSearchBar() {
     const [isSearching, setIsSearching] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Sinkronisasi isi kotak pencarian jika URL berubah secara eksternal (misal klik reset filter)
+    useEffect(() => {
+        setSearchQuery(searchParams.get('search') || "");
+    }, [searchParams]);
 
     // Menutup dropdown jika user klik di luar area search bar
     useEffect(() => {
@@ -41,10 +47,11 @@ function GlobalSearchBar() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    // Logika Live Search dengan Debounce (Jeda 300ms agar tidak spam database)
+    // Logika Live Search dengan Debounce
     useEffect(() => {
         const delayDebounceFn = setTimeout(async () => {
             const query = searchQuery.trim().toLowerCase();
+            
             if (query.length >= 2) { 
                 setIsSearching(true);
                 setShowDropdown(true);
@@ -76,9 +83,7 @@ function GlobalSearchBar() {
 
                     // Filter Penjualan
                     sData.forEach((s: any) => {
-                        // PERBAIKAN TypeScript: Ditambahkan ": any" di sini
                         const p: any = s.purchases || {}; 
-                        
                         const searchString = `${p.car_brand} ${p.car_year} ${p.license_plate} ${s.buyer_name} sal-${s.id}`.toLowerCase();
                         if (searchString.includes(query)) {
                             combined.push({
@@ -101,15 +106,20 @@ function GlobalSearchBar() {
             } else {
                 setResults([]);
                 setShowDropdown(false);
+                
+                // PERBAIKAN FLEKSIBEL: Jika kotak pencarian kosong dan URL masih memiliki parameter ?search, otomatis bersihkan URL
+                if (query.length === 0 && searchParams.get('search')) {
+                    router.push(pathname); // Mengembalikan ke halaman bersih tanpa parameter filter search
+                }
             }
         }, 300);
 
         return () => clearTimeout(delayDebounceFn);
-    }, [searchQuery]);
+    }, [searchQuery, pathname, router, searchParams]);
 
     const handleSelectResult = (type: string, id: string) => {
         setShowDropdown(false);
-        setSearchQuery(""); // Bersihkan input setelah diklik
+        setSearchQuery(""); 
         router.push(`/admin/transactions/detail/${type}/${id}`);
     };
 
@@ -138,7 +148,6 @@ function GlobalSearchBar() {
                 />
             </form>
 
-            {/* DROPDOWN HASIL LIVE SEARCH */}
             {showDropdown && (
                 <div className="absolute top-full right-0 mt-2 w-[350px] bg-white border border-[#E5E7EB] shadow-xl rounded-xl overflow-hidden z-50 flex flex-col">
                     {isSearching ? (
