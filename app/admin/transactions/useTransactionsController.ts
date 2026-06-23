@@ -20,6 +20,8 @@ export interface TransactionUI {
     amountColor: string;
     coverUrl: string | null;
     status: 'Tersedia' | 'Terjual';
+    // TAMBAHAN: Kita sisipkan rawData asli dari database agar bisa didownload dengan detail
+    rawData: any; 
 }
 
 export function useTransactionsController() {
@@ -43,7 +45,6 @@ export function useTransactionsController() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
-    // STATE DIPERBARUI DENGAN MODAL MENGENDAP
     const [stats, setStats] = useState({ pemasukan: 0, pengeluaran: 0, keuntungan: 0, modalMengendap: 0 });
 
     const formatDate = (isoString: string) => {
@@ -56,7 +57,6 @@ export function useTransactionsController() {
             const purchases = await transactionModel.getPurchasesForStats();
             const sales = await transactionModel.getSalesForStats();
             
-            // Perhitungan Modal Stok (Mobil yang is_sold === false)
             const unsoldPurchases = purchases.filter((p: any) => p.is_sold === false);
             const totalModal = unsoldPurchases.reduce((sum, item) => sum + Number(item.total_acquisition_cost), 0);
 
@@ -93,7 +93,8 @@ export function useTransactionsController() {
                         amount: `-Rp ${Number(item.total_acquisition_cost).toLocaleString('id-ID')}`,
                         amountColor: 'text-[#1B263B]',
                         coverUrl: item.document_urls && item.document_urls.length > 0 ? item.document_urls[0] : null,
-                        status: item.is_sold ? 'Terjual' : 'Tersedia'
+                        status: item.is_sold ? 'Terjual' : 'Tersedia',
+                        rawData: item // Simpan data utuh
                     }));
                     setTransactions(formattedData);
                 } else {
@@ -116,7 +117,8 @@ export function useTransactionsController() {
                             amountColor: netProfit >= 0 ? 'text-green-600' : 'text-red-600',
                             amount: netProfit >= 0 ? `+Rp ${netProfit.toLocaleString('id-ID')}` : `-Rp ${Math.abs(netProfit).toLocaleString('id-ID')}`,
                             coverUrl: item.purchases?.document_urls && item.purchases.document_urls.length > 0 ? item.purchases.document_urls[0] : null,
-                            status: 'Terjual'
+                            status: 'Terjual',
+                            rawData: item // Simpan data utuh
                         };
                     });
                     setTransactions(formattedData);
@@ -174,7 +176,58 @@ export function useTransactionsController() {
         currentPage * itemsPerPage
     );
 
-    const handleDownloadExcel = () => { /* Logic is unchanged */ };
+    // FUNGSI DOWNLOAD EXCEL DIPERBARUI
+    const handleDownloadExcel = async () => {
+        if (filteredAndSortedTransactions.length === 0) {
+            alert("Tidak ada data untuk diunduh pada rentang waktu/filter ini.");
+            return;
+        }
+
+        let csvContent = "";
+        
+        if (activeTab === 'pembelian') {
+            // Header Kolom Pembelian (Termasuk jika mobil sudah terjual)
+            csvContent += "ID,Tanggal Beli,Nama Sumber,Merk Mobil,Tahun,Warna,No Polisi,Status Stok,Harga Beli,Biaya Cat,Biaya Mesin,Biaya Onderdil,Biaya Pajak,Harga Jadi Total,Catatan Pembelian\n";
+            
+            filteredAndSortedTransactions.forEach(row => {
+                const p = row.rawData;
+                // Pembersihan teks agar koma (,) tidak merusak struktur CSV
+                const cleanSource = (p.source_name || "").replace(/,/g, '');
+                const cleanBrand = (p.car_brand || "").replace(/,/g, '');
+                const cleanColor = (p.car_color || "").replace(/,/g, '');
+                const cleanNotes = (p.additional_notes || "").replace(/,/g, ' ').replace(/\n/g, ' ');
+
+                csvContent += `"${row.id}","${p.created_at.split('T')[0]}","${cleanSource}","${cleanBrand}","${p.car_year}","${cleanColor}","${p.license_plate}","${row.status}","${p.purchase_price}","${p.paint_cost}","${p.engine_cost}","${p.parts_cost}","${p.tax_cost}","${p.total_acquisition_cost}","${cleanNotes}"\n`;
+            });
+        } else {
+            // Header Kolom Penjualan (Digabung dengan data Pembelian asalnya)
+            csvContent += "ID,Tanggal Jual,Merk Mobil,Tahun,Warna,No Polisi,Nama Pembeli,Nama Makelar,Harga Beli & Perbaikan,Harga Jual Akhir,Keuntungan Bersih,Catatan Penjualan\n";
+            
+            filteredAndSortedTransactions.forEach(row => {
+                const s = row.rawData;
+                const p = s.purchases || {}; // Data Pembeliannya
+                
+                // Pembersihan teks
+                const cleanBrand = (p.car_brand || "").replace(/,/g, '');
+                const cleanColor = (p.car_color || "").replace(/,/g, '');
+                const cleanBuyer = (s.buyer_name || "").replace(/,/g, '');
+                const cleanBroker = (s.broker_name || "").replace(/,/g, '');
+                const cleanNotes = (s.sale_notes || "").replace(/,/g, ' ').replace(/\n/g, ' ');
+
+                csvContent += `"${row.id}","${s.created_at.split('T')[0]}","${cleanBrand}","${p.car_year}","${cleanColor}","${p.license_plate}","${cleanBuyer}","${cleanBroker}","${p.total_acquisition_cost}","${s.sell_price}","${s.net_profit}","${cleanNotes}"\n`;
+            });
+        }
+
+        // Trigger Download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Laporan_${activeTab}_AmanahMobilindo_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     const handleDelete = async (id: string, type: 'pembelian' | 'penjualan') => {
         try {
